@@ -24,8 +24,7 @@
     mkdir $out/assets/images
 
     # Copy images and fonts
-    cp ./assets/images/*.webp $out/assets/images
-    cp ./assets/images/favicon* $out/assets/images
+    cp -r ./assets/images/* $out/assets/images
     cp ./assets/fonts/* $out/assets/fonts
 
     ln -s ${fonts.packages.${system}.berkeley-mono-1009}/share/fonts/web/berkeley-mono-variable/WEB/BerkeleyMonoVariable-Regular.woff2 $out/assets/fonts/BerkeleyMonoVariable-Regular.woff2
