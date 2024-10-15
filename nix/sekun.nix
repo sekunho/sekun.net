@@ -32,6 +32,6 @@
     ln -s ${fonts.packages.${system}.berkeley-mono-1009}/share/fonts/web/berkeley-mono-variable/WEB/BerkeleyMonoVariable-Italic.woff2 $out/assets/fonts/BerkeleyMonoVariable-Italic.woff2
 
     ${puggle}/bin/puggle build
-    cp -r public/* $out
+    mv public/* $out
   '';
 }
