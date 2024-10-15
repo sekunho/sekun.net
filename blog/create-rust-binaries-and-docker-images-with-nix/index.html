@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Create Rust binaries, and Docker images with Nix - sekun</title>
+
+    <link rel="stylesheet" href="/assets/css/style.css"/>
+
+    <link rel="icon" href="/assets/images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
+    <link rel="mask-icon" href="/assets/images/safari-pinned-tab.svg">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nix.min.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    
+  </head>
+
+  <body>
+    <nav class="nav">
+  <ul>
+    <li><a href="/">λsekun.net</a></li>
+    <li><a href="/blog">/blog</a></li>
+    <li><a href="/projects">/projects</a></li>
+    <li><a href="/contact">/contact</a></li>
+  </ul>
+</nav>
+    
+<h1>Create Rust binaries, and Docker images with Nix</h1>
+<img class="cover" src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/cover.png"/>
+<span class="post-metadata">
+  Published on <time datetime="2022-04-11T06:20:00+00:00">2022-04-11 06:20 UTC</time>
+</span>
+<h2>Introduction</h2>
+<p>A few days ago, I <a href="/posts/what-i-learned-from-building-a-rust-emoji-url-shortener">released</a>
+<del>the abomination of</del> a project called <code>emojied</code>
+(<a href="https://emojied.net">website</a>, <a href="https://github.com/sekunho/emojied">repo</a>) to
+the world. It went great, I’m glad people found it funny. However, I’m not too
+pleased with the deployment process: from building the project to shipping it.
+I made heavy use of Docker to build the necessary static assets, and binary.</p>
+<p>Here’s the current setup:</p>
+<ul>
+<li>Dev environment
+<ul>
+<li>PostgreSQL (handled by NixOS)</li>
+<li><code>rustc</code>, <code>openssl</code>, <code>cargo</code>, etc. (handled by Nix)</li>
+</ul>
+</li>
+<li>CI/CD (GitHub Actions)
+<ol>
+<li>Build static assets (just in GitHub Actions)</li>
+<li>Build static binary (Docker, <code>ekidd/rust-musl-builder</code>)</li>
+<li>Build prod image (Docker, <code>alpine</code>)</li>
+</ol>
+</li>
+</ul>
+<p>I’ve already tried to remove as much responsibility from #3 by building the
+static assets, and binary beforehand; I really need to do is copy it over.
+#2 is where the pain is because it does not reuse the dependencies from #1.
+So, I have two options here:</p>
+<ol>
+<li>Use Docker for everything, but this complicates my dev environment cause now
+I have to deal with containers; or</li>
+<li>I use Nix for everything, including constructing the prod image.</li>
+</ol>
+<p>I dislike the idea of using containers if all you want is reproducibility
+because it seems like an overkill. It’s annoying to setup volumes, annoying to
+manage permissions, annoying to wait for it to pull an entire image. On the other
+hand, while Nix is pretty difficult, it seems like a saner approach for what I
+want to do, so I chose it.</p>
+<p>So, here’s how it went. (Spoiler: Kinda painful to setup)</p>
+<h2>Starting point</h2>
+<p>This is the starting flake file:</p>
+<pre><code class="language-nix">{
+  description = "";
+
+  inputs = {
+    # 1
+    nixpkgs.url = "github:NixOS/nixpkgs";
+
+    # Like `nixpkgs` but more bleeding-edge
+    nixos-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    # 2
+    flake-utils.url = "github:numtide/flake-utils";
+
+    # 3
+    naersk.url = "github:nix-community/naersk";
+  };
+
+  outputs = { self, nixpkgs, nixos-unstable, flake-utils, naersk }:
+    flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
+      let pkgs = nixpkgs.legacyPackages.${system};
+           naersk-lib = naersk.lib."${system}".override {
+             cargo = pkgs.cargo;
+             rustc = pkgs.rustc;
+           };
+      in rec {
+        # Build binary
+        packages.emojied = naersk-lib.buildPackage {
+          pname = "emojied";
+          root = ./.;
+        };
+
+        # The package that gets built when I run `nix build`
+        defaultPackage = packages.emojied;
+
+        apps.emojied = flake-utils.lib.mkApp {
+          drv = packages.emojied;
+        };
+      });
+}
+</code></pre>
+<ol>
+<li><a href="https://nixos.wiki/wiki/Nixpkgs"><code>nixpkgs</code></a> is like a package repository.
+This is where you get <code>rustc</code>, <code>cargo</code>, etc. for example.</li>
+<li><a href="https://github.com/numtide/flake-utils"><code>flake-utils</code></a> just makes dealing
+with flakes a bit more convenient, especially with multiple OSes (only doing
+Linux for now).</li>
+<li><a href="https://github.com/nix-community/naersk"><code>naersk</code></a> makes it easier to build
+static Rust binaries.</li>
+</ol>
+<p>These are all <em>inputs</em>, where everything in the <code>outputs</code> field is sourced
+from. <code>outputs</code> is where everything gets packaged. Another thing is, to help
+with reproducibility, it pins these inputs to a specific GitHub commit via a
+lock file. So no version numbers, but down to the commit. This is how projects
+can be built in the future in the exact same way as now.</p>
+<p>If you peek into <code>flake.lock</code>, you’ll find something like this:</p>
+<pre><code>"naersk": {
+  "inputs": {
+    "nixpkgs": "nixpkgs"
+  },
+  "locked": {
+    "lastModified": 1649096192,
+    "narHash": "sha256-7O8e+eZEYeU+ET98u/zW5epuoN/xYx9G+CIh4DjZVzY=",
+    "owner": "nix-community",
+    "repo": "naersk",
+    "rev": "d626f73332a8f587b613b0afe7293dd0777be07d",
+    "type": "github"
+  },
+  "original": {
+    "owner": "nix-community",
+    "repo": "naersk",
+    "type": "github"
+  }
+},
+"nixpkgs": {
+  "locked": {
+    "lastModified": 1648219316,
+    "narHash": "sha256-Ctij+dOi0ZZIfX5eMhgwugfvB+WZSrvVNAyAuANOsnQ=",
+    "owner": "NixOS",
+    "repo": "nixpkgs",
+    "rev": "30d3d79b7d3607d56546dd2a6b49e156ba0ec634",
+    "type": "github"
+  },
+  "original": {
+    "id": "nixpkgs",
+    "type": "indirect"
+  }
+}
+</code></pre>
+<p>There are more stuff in it, but hopefully this will make things a bit clearer.</p>
+<p>That’s the best ELI5 I can think of, so I recommend you check out the
+<a href="https://nixos.wiki/wiki/Flakes">documentation</a> for a more technical explanation.</p>
+<p>So, I run <code>nix build</code> and…</p>
+<h2>Problem 0: OpenSSL</h2>
+<p>Bam.</p>
+<pre><code>error: builder for '/nix/store/pv9szkam1rawk40ywp3v89k53zg4b1l4-emojied-deps-0.1.0.drv' failed with exit code 101;
+       last 10 log lines:
+       &gt;   It looks like you're compiling on Linux and also targeting Linux. Currently this
+       &gt;   requires the `pkg-config` utility to find OpenSSL but unfortunately `pkg-config`
+       &gt;   could not be found. If you have OpenSSL installed you can likely fix this by
+       &gt;   installing `pkg-config`.
+       &gt;
+       &gt;   ', /sources/openssl-sys-0.9.72/build/find_normal.rs:180:5
+       &gt;   note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+       &gt; warning: build failed, waiting for other jobs to finish...
+       &gt; error: build failed
+       &gt; [naersk] cargo returned with exit code 101, exiting
+       For full logs, run 'nix log /nix/store/pv9szkam1rawk40ywp3v89k53zg4b1l4-emojied-deps-0.1.0.drv'.
+error: 1 dependencies of derivation '/nix/store/r0h49v7i2vg5dckb9h2g8p7na048rk4g-emojied-0.1.0.drv' failed to build
+</code></pre>
+<p>I’ve seen this error before! Since <code>emojied</code> uses <code>native-tls</code>, and since it’s
+just a wrapper around OpenSSL, I need to have OpenSSL around. Thankfully,
+<code>naersk</code> has a <code>buildInputs</code> attribute for us to use.</p>
+<pre><code class="language-nix">packages.emojied = naersk-lib.buildPackage {
+  pname = "emojied";
+  root = ./.;
+  buildInputs = with pkgs; [ openssl pkg-config ];
+};
+</code></pre>
+<p>Ran <code>nix build</code>, and I’m greeted with another problem!</p>
+<h2>Problem 1: <code>git</code> submodule woes</h2>
+<pre><code>Compiling maud_macros v0.23.0 (https://github.com/lambda-fairy/maud?branch=main#e6787cd6)
+error: could not compile `maud_macros` due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: build failed
+error[E0583]: file not found for module `escape`
+ --&gt; /sources/maud_macros-0.23.0-e6787cd62165a075c7f16a32f8bbacc398f52d13/src/lib.rs:9:1
+  |
+9 | mod escape;
+  | ^^^^^^^^^^^
+  |
+  = help: to create the module `escape`, create file "/nix/store/shixfmbv64zzi9i0rzb9c8870ydm7cf2-crates-io/maud_macr&gt;
+
+
+error[E0425]: cannot find function `escape_to_string` in module `escape`
+   --&gt; /sources/maud_macros-0.23.0-e6787cd62165a075c7f16a32f8bbacc398f52d13/src/generate.rs:272:17
+    |
+272 |         escape::escape_to_string(string, &amp;mut self.tail);
+    |                 ^^^^^^^^^^^^^^^^ not found in `escape`
+
+
+error: aborting due to 2 previous errors
+
+
+Some errors have detailed explanations: E0425, E0583.
+
+For more information about an error, try `rustc --explain E0425`.
+
+[naersk] cargo returned with exit code 101, exiting
+</code></pre>
+<p>It’s telling me that <code>cargo</code> can’t resolve the <code>escape</code> module for <code>maud_macros</code>.
+I took a look at the <a href="https://github.com/lambda-fairy/maud/tree/main/maud_macros/src">source</a>,
+and initially seemed like it’s a submodule:</p>
+<p><img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/maud-dir.png" alt="A list of directories with the escape.rs file being a submodule" /></p>
+<p>Turns out there’s a ticket (<a href="https://github.com/nix-community/naersk/issues/110">#110</a>)
+pointing out that submodules isn’t supported by <code>naersk</code>. Fortunately, by the
+time I read this, there was a PR ready that fixed this. All it required was
+adding <code>gitSubmodules = true;</code>:</p>
+<pre><code class="language-nix">packages.emojied = naersk-lib.buildPackage {
+  pname = "emojied";
+  root = ./.;
+  gitSubmodules = true;
+};
+</code></pre>
+<p>So this fixes everything then, right?</p>
+<p>Wrong.</p>
+<h2>Problem 2: Symlink woes</h2>
+<p>Remember how I said it was a submodule? Well, it turns out that <code>escape.rs</code> is
+actually a symlink (the icons look too similar!). <code>cargo</code> handles it just fine
+so running <code>cargo build</code> will work out. But this isn’t the case for <code>naersk</code>. I
+couldn’t find any issue talking about symlinks so I opened one
+(<a href="https://github.com/nix-community/naersk/issues/230">#230</a>). Unfortunately, I
+had no idea how to fix it, so I just decided to manually clone it, and remove
+the symlink for a copy instead. It’s only one file, so it isn’t that big of a
+deal.</p>
+<p>Kind of a hack, but it works now! A binary is available in <code>./result/bin/</code>,
+albeit a symlink. I ran it with:</p>
+<pre><code class="language-sh">PG__DBNAME="emojied_db" PG__HOST="localhost" PG__USER="sekun" PG__PORT="5432" \
+  ./result/bin/emojied
+</code></pre>
+<p>…and I was greeted with this unstyled page:</p>
+<p><img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/no-static-assets.png" alt="screenshot of emojied with no style" /></p>
+<h2>Problem 3: Static assets</h2>
+<p><code>emojied</code> is comprised of two things: a server binary, and static assets. These
+static assets are built using <code>tailwindcss</code>’s CLI, and <code>esbuild</code>… which was
+not handled by <code>naersk</code>. It does not seem to provide an escape hatch, which
+makes sense anyway cause it would be kinda weird to do things unrelated to Rust
+in a Rust builder.</p>
+<p>Now what?</p>
+<p>Well, I found out about <code>overrideAttrs</code> and it is wonderful.</p>
+<pre><code class="language-nix">{
+  # ...
+
+  outputs = { self, nixpkgs, nixos-unstable, flake-utils, naersk }:
+    flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
+      let pkgs = nixpkgs.legacyPackages.${system};
+          unstablepkgs = nixos-unstable.legacyPackages.${system};
+          naersk-lib = naersk.lib."${system}".override {
+            cargo = pkgs.cargo;
+            rustc = pkgs.rustc;
+          };
+
+          # I moved it up here so I could bind it to `emojied`.
+          emojied = (naersk-lib.buildPackage {
+            pname = "emojied";
+            root = ./.;
+            nativeBuildInputs = with pkgs; [ ];
+            buildInputs = with pkgs; [ openssl pkg-config ];
+          }).overrideAttrs (old: {
+            # I get access to `old` which has the previous attributes.
+            # And I get to override anything!
+
+            nativeBuildInputs = old.nativeBuildInputs ++ [
+              unstablepkgs.nodePackages.typescript
+              unstablepkgs.nodePackages.tailwindcss
+              unstablepkgs.esbuild
+            ];
+
+            buildInputs = old.buildInputs;
+
+            buildPhase = old.buildPhase + ''
+              tailwindcss \
+                --input assets/app.css \
+                --config assets/tailwind.config.js \
+                --output public/app.css \
+                --minify
+
+              esbuild \
+                assets/app.ts \
+                --outdir=public/ \
+                --minify
+            '';
+
+            installPhase = old.installPhase + ''
+              mv public $out/bin
+              mv bin/run $out/bin/run
+            '';
+          });
+      in
+      rec {
+        packages.emojied = emojied;
+        defaultPackage = packages.emojied;
+
+        apps.emojied = flake-utils.lib.mkApp {
+          drv = packages.emojied;
+        };
+      });
+}
+</code></pre>
+<p>I removed <code>gitSubmodules = true</code> since it wasn’t necessary anymore. <code>buildPackage</code>
+just spits out an attribute set, I can override it to add more things. Here, I
+added new native build inputs (build time), new steps to <code>buildPhase</code>, and
+<code>installPhase</code> for the static assets.</p>
+<p>And I ran it like this:</p>
+<pre><code class="language-sh">cd result/bin
+
+PG__DBNAME="emojied_db" PG__HOST="localhost" PG__USER="sekun" PG__PORT="5432" \
+  ./emojied
+</code></pre>
+<p><img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/has-static-assets.png" alt="screenshot of emojied with style" /></p>
+<p>Beautiful.</p>
+<p>Okay, so that seems to work but I have to run <code>emojied</code> in the same directory as
+<code>public/</code> cause otherwise it won’t find anything. Which is expected because:</p>
+<pre><code class="language-rust">pub async fn stylesheet() -&gt; (StatusCode, HeaderMap, String) {
+    let mut headers = HeaderMap::new();
+
+    match fs::read_to_string("public/app.css") {
+                           // ^ Relative path. Good job me!
+        Ok(content) =&gt; {
+            headers.insert(
+                HeaderName::from_static("content-type"),
+                HeaderValue::from_static("text/css; charset=utf-8"),
+            );
+
+            (StatusCode::OK, headers, content)
+        }
+
+        Err(_e) =&gt; (StatusCode::NOT_FOUND, headers, String::from("Not found")),
+    }
+}
+</code></pre>
+<p>I’m using relative paths! But other than that, it works. It’s not exactly an issue
+for the way I’m using it, which is:</p>
+<ol>
+<li>Build the binary</li>
+<li>Build static assets</li>
+<li>Copy files from #1 and #2, and throw it into an image.</li>
+</ol>
+<p>But with <code>nix run</code>, it gives me broken styles again. I don’t want it to depend
+on where I run it! So. Close.</p>
+<h2>Problem 4: Making it work™</h2>
+<p>So the problem is that the file paths are relative which makes it depend on
+where I run the binary. The plan then is to provide the static asset directory
+path during runtime!</p>
+<p>This way it’s flexible enough to:</p>
+<ol>
+<li>Ship off to a Docker image; and</li>
+<li>Use <code>nix run</code> without breaking anything.</li>
+</ol>
+<p>Something like this would be nice:</p>
+<pre><code>PG__DBNAME="emojied_db" \
+PG__HOST="localhost" \
+PG__USER="sekun" \
+PG__PORT="5432" \
+APP__STATIC_ASSETS="/foo/bar/public/" \
+  ./emojied
+</code></pre>
+<p>I added another field to <code>AppConfig</code>, and checked if there’s an argument called
+<code>static_assets_path</code>:</p>
+<pre><code class="language-rust">// src/config.rs
+
+struct AppConfig {
+    // ...
+    pub static_assets_path: String // See disclaimer below
+}
+</code></pre>
+<p>Loaded it from the environment:</p>
+<pre><code class="language-rust">// src/config.rs
+
+let static_assets_path = env::var("APP__STATIC_ASSETS")
+    .map_err(|_| Error::MissingStaticAssetsPath)?;
+
+// ...
+
+Ok(AppConfig {
+    // ...
+    static_assets_path, // New!
+})
+</code></pre>
+<p>Add <code>AppConfig</code> to the middleware:</p>
+<pre><code class="language-rust">// ...
+let config = Arc::new(config);
+
+let app = Router::new()
+    // ...
+    .layer(Extension(config));
+</code></pre>
+<p>And in the functions serving the files:</p>
+<pre><code class="language-rust">pub async fn js(
+    Extension(config): Extension&lt;Arc&lt;AppConfig&gt;&gt; // New
+) -&gt; (StatusCode, HeaderMap, String) {
+    let mut headers = HeaderMap::new();
+    let mut static_assets_path = config.static_assets_path.clone(); // New
+
+    static_assets_path.push_str("public/app.js"); // New
+
+                          // Shiny, new path
+    match fs::read_to_string(static_assets_path) {
+        Ok(content) =&gt; {
+            headers.insert(
+                HeaderName::from_static("content-type"),
+                HeaderValue::from_static("application/javascript; charset=utf-8"),
+            );
+
+            (StatusCode::OK, headers, content)
+        }
+
+        Err(_e) =&gt; (StatusCode::NOT_FOUND, headers, String::from("Not found")),
+    }
+}
+</code></pre>
+<p>…which I then repeated in 2 more functions because I was too lazy to make one
+endpoint for static assets. Now, I feel the pain of my laziness.</p>
+<blockquote>
+<p>Disclaimer: Before you come after me with pitchforks, I later did a tiny
+refactor which uses <code>PathBuf</code> rather than a <code>String</code>.</p>
+</blockquote>
+<p>Okay, but then I still need a way to set the environment variable automatically,
+right? Currently, it’s not very convenient to do it every time it’s called with
+<code>nix run</code>. Turns out <a href="https://nixos.wiki/wiki/Nix_Cookbook"><code>makeWrapper</code></a> exists.
+(Thanks K900!)</p>
+<pre><code class="language-nix">{
+  # ...
+
+        packages.emojied-unwrapped = emojied;
+
+
+        # New
+        packages.emojied = pkgs.symlinkJoin {
+          name = "emojied";
+          paths = [ emojied ];
+          buildInputs = [ pkgs.makeWrapper ];
+
+          postBuild = ''
+            wrapProgram $out/bin/emojied \
+              --set APP__STATIC_ASSETS "${emojied}/bin/public"
+                                      # ^ What a convenient way to get the path
+          '';
+        };
+
+  # ...
+}
+</code></pre>
+<p>So I’ll get the “wrapped” version of emojied with <code>nix build</code>, which has the
+static assets path already applied. Doing so gets me this:</p>
+<pre><code>sekun@nixos ~/P/emojiurl (chore/nixify-package)&gt; nix build
+sekun@nixos ~/P/emojiurl (chore/nixify-package)&gt; ls -la result/bin
+total 20
+dr-xr-xr-x 3 root root 4096 Jan  1  1970 .
+dr-xr-xr-x 3 root root 4096 Jan  1  1970 ..
+-r-xr-xr-x 1 root root  264 Jan  1  1970 emojied
+lrwxrwxrwx 1 root root   69 Jan  1  1970 .emojied-wrapped -&gt; /nix/store/7nh13gwhhlmfmmb6qss47axj7nd99jw7-emojied-0.1.0/bin/emojied
+dr-xr-xr-x 2 root root 4096 Jan  1  1970 public
+
+sekun@nixos ~/P/emojiurl (chore/nixify-package)&gt; ls -la
+# ...
+lrwxrwxrwx  1 sekun users      51 Apr 12 22:55 result -&gt; /nix/store/300n6rjxm88asmqhv99hid9mi8148xjs-emojied
+#...
+</code></pre>
+<p>So, it symlinked <code>.emojied-wrapped</code> to the original <code>emojied</code>, and <code>result</code> is
+symlinked to a wrapped version of it. Is this another derivation? Seems like it,
+although I don’t really know since I’m not so familiar with this. I’ll have to
+do more reading. I’m just gonna manually test it to verify if it all works.
+<code>.#emojied-unwrapped</code> needs to complain about the missing assets path if I don’t
+provide one, and <code>.#emojied</code> shouldn’t.</p>
+<pre><code class="language-sh">sekun@nixos ~/P/emojiurl (chore/nixify-package)&gt; PG__DBNAME="emojied_db" PG__HOST="localhost" PG__USER="sekun" PG__PORT="5432" nix run .#emojied-unwrapped
+Loading configuration from environment
+Application config error: Missing environment variable: `APP__STATIC_ASSETS=&lt;PATH_TO_FILES&gt;`
+
+sekun@nixos ~/P/emojiurl (chore/nixify-package) [1]&gt; PG__DBNAME="emojied_db" PG__HOST="localhost" PG__USER="sekun" PG__PORT="5432" nix run
+Loading configuration from environment
+Attempting to establish a database connection
+Database connection established
+</code></pre>
+<p>…and it works as expected. The second one also serves the static assets
+just fine! Hooray.</p>
+<h2>Problem 5: Copy all that to a Docker image</h2>
+<p>The final step is copying what was built by Nix to a Docker image. I’m currently
+using a <code>Dockerfile</code> for that but this won’t work with this new setup. The problem
+now is that Docker doesn’t resolve symlinks that point outside the context, which
+is problematic since <code>result</code> is a symlink that points to some place in <code>/nix/store</code>!
+I could do some dirty hacks, but I could also just use Nix to build a Docker
+image for me.</p>
+<p><em>Wait, did you say Nix could build Docker images?</em></p>
+<p>Oh yeah, big time; <a href="https://nix.dev/tutorials/building-and-running-docker-images"><code>nix.dev</code></a>
+has a great starting point <sup class="footnote-reference"><a href="#9">1</a></sup> for doing so.</p>
+<p>Here’s what I ended up with:</p>
+<pre><code class="language-nix"># flake.nix
+
+# ...
+
+# In `outputs`
+packages.emojied-docker = pkgs.dockerTools.buildImage {
+  name = "emojied-docker";
+  tag = "latest";
+
+  contents = [ pkgs.bash ];
+
+  config = {
+    WorkingDir = "/app";
+    Env = [ "PATH=${pkgs.coreutils}/bin/:${packages.emojied}/bin" ];
+
+    ExposedPorts = {
+      "3000/tcp" = {};
+    };
+
+    # bin/run is a script that handles the dumping of CA certs, and runs the
+    # emojied server.
+    Cmd = [ "${packages.emojied}/bin/run" ];
+  };
+};
+</code></pre>
+<p>If you squint hard enough, the contents of <code>config</code> just looks like a Nix version
+of a <code>Dockerfile</code>, which it is! The other cool part is now the package versions
+are in sync no matter what environment it is in. <code>contents</code> allows me to throw
+in Nix packages to the image. Since it seemed like the <code>PATH</code>s aren’t set automatically,
+I had to specify it in <code>Env</code> for <code>coreutils</code>, and <code>emojied</code>.</p>
+<p>It’s basically like the other packages created, like <code>emojied</code>, and
+<code>emojied-unwrapped</code>. Which means I can build it in the exact same way as them:</p>
+<pre><code class="language-sh"># Don't mind the branch change. I ran this in the morning.
+sekun@nixos ~/P/emojiurl (main)&gt; nix build .#emojied-docker
+# some build-related output
+
+sekun@nixos ~/P/emojiurl (main)&gt; ls -la
+# ...
+lrwxrwxrwx  1 sekun users      78 Apr 13 12:28 result -&gt; /nix/store/vmrja5imhrfhvl082j5qkqahcfj85adk-docker-image-emojied-docker.tar.gz
+# ...
+</code></pre>
+<p>Instead, <code>result</code> is a symlink to some image tar file which you can load with
+<code>docker load &lt; result</code>.</p>
+<pre><code class="language-sh">sekun@nixos ~/P/emojiurl (main)&gt; docker load &lt; result
+Loaded image: emojied-docker:latest
+
+sekun@nixos ~/P/emojiurl (main)&gt; docker images
+# ...
+emojied-docker latest 1a9092013b19 52 years ago 50MB
+</code></pre>
+<p>Sweet!</p>
+<p>All that’s left is to update the CI for these new steps, which is on the simpler
+side of things now:</p>
+<pre><code class="language-yml">name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build release and deploy
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Nix
+        uses: cachix/install-nix-action@v15
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Build image
+        run: |
+          nix build .#emojied-docker
+          docker load &lt; result
+
+      - name: Rename image
+        run: docker tag emojied-docker:latest hsekun/emojied:latest
+
+      - name: Push image
+        run: docker push hsekun/emojied:latest
+</code></pre>
+<p>It’s just so much easier, and I have more confidence that the CI will work
+as intended now that Nix is handling the important parts, which I can do
+locally. Not to say that Docker can’t do the same thing, but I found that there
+were some differences with volumes that made it painful to debug.</p>
+<p><img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/sweet-green-gh-actions.png" alt="A screenshot of a GitHub actions job" /></p>
+<h2>Conclusion</h2>
+<p>While it did simplify things such as dependency management across different
+environments, and the deploy process, setting up is pretty complicated. I had
+to look through different references and the Nix matrix channel just to find a
+description of an attribute. Things aren’t as well-documented but there’s a lot
+of community effort to make this less painful.</p>
+<p>Edit (April 24, 2022): Turns out that it actually isn’t a static binary, and
+I’ve modified the post accordingly. The upside is building the Docker image via
+Nix with <code>emojied</code> in it means it’s somewhat irrelevant to require it to be a
+static binary to begin with. But it does mean I can’t easily distribute it outside
+<code>nix</code>, which is a bummer. Maybe I’ll hunt for a workaround in the future. Right
+now, I’m not too keen into sinking a lot of time into something I won’t benefit
+from.</p>
+
+
+    <footer>
+  <div>
+    Copyright <a href="https://github.com/sekunho">SEKUN</a> 2022-2024.
+    Generated by <a href="/projects/puggle"><code>puggle</code></a>.
+  </div>
+</footer>
+
+    <script>hljs.highlightAll();</script>
+  </body>
+</html>
