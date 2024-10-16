@@ -1,4 +1,4 @@
-{ pkgs, version, puggle }: pkgs.stdenv.mkDerivation {
+{ pkgs, version, system, puggle }: pkgs.stdenv.mkDerivation {
   inherit version;
   name = "sekun";
   src = ../.;

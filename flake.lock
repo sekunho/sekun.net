@@ -115,16 +115,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1717179513,
-        "narHash": "sha256-vboIEwIQojofItm2xGCdZCzW96U85l9nDW3ifMuAIdM=",
+        "lastModified": 1728909085,
+        "narHash": "sha256-WLxED18lodtQiayIPDE5zwAfkPJSjHJ35UhZ8h3cJUg=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "63dacb46bf939521bdc93981b4cbb7ecb58427a0",
+        "rev": "c0b1da36f7c34a7146501f684e9ebdf15d2bebf8",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "24.05",
+        "ref": "nixos-24.05",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -207,11 +207,11 @@
         "pre-commit-hooks": "pre-commit-hooks"
       },
       "locked": {
-        "lastModified": 1729024761,
-        "narHash": "sha256-jRCBBvDYGP7X01w7iJvm3gsYwZUpvFzpyKpWF9mdKlY=",
+        "lastModified": 1729028342,
+        "narHash": "sha256-3x54YPDMbx5aHL0ee+9qD6aF7igbOgeRD5FLdnI0Q4Q=",
         "owner": "sekunho",
         "repo": "puggle",
-        "rev": "769081847a37107fd08ee01ee1afb45790e02b14",
+        "rev": "869d7b989dbd3e67cc1be6568ceb8b428117157a",
         "type": "github"
       },
       "original": {
