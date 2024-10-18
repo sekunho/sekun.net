@@ -18,35 +18,32 @@
     <meta charset="UTF-8">
     
 <meta name="title" content="Deploying Nix builds to Fly.io" />
-<meta name="description" content="The current approach Fly.io recommends doing is you write a `Dockerfile` to run
-build, and run your app, and then when deploying to their platform, they look
-for it, and do the usual build image, push to their container registry, and
-deploy it to a machine. However, if you've already packaged your application with
-`nix`, it would be nice to reuse that, and throw it into a docker image somehow
-instead of having to do a separate build process.
+<meta name="description" content="The current approach Fly.io recommends doing is you write a Dockerfile to
+build, and run your app on their platform. However, if you've already packaged
+your application with nix, it would be nice to capitalize on that, and
+throw it into a docker image somehow instead of having to create a
+separate build process.
 " />
 
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://metatags.io/" />
 <meta property="og:title" content="Deploying Nix builds to Fly.io" />
-<meta property="og:description" content="The current approach Fly.io recommends doing is you write a `Dockerfile` to run
-build, and run your app, and then when deploying to their platform, they look
-for it, and do the usual build image, push to their container registry, and
-deploy it to a machine. However, if you've already packaged your application with
-`nix`, it would be nice to reuse that, and throw it into a docker image somehow
-instead of having to do a separate build process.
+<meta property="og:description" content="The current approach Fly.io recommends doing is you write a Dockerfile to
+build, and run your app on their platform. However, if you've already packaged
+your application with nix, it would be nice to capitalize on that, and
+throw it into a docker image somehow instead of having to create a
+separate build process.
 " />
 <meta property="og:image" content="https://sekun.net/assets/images/posts/deploying-nix-builds-to-fly-io/cover.jpg" />
 
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content="https://metatags.io/" />
 <meta property="twitter:title" content="Deploying Nix builds to Fly.io" />
-<meta property="twitter:description" content="The current approach Fly.io recommends doing is you write a `Dockerfile` to run
-build, and run your app, and then when deploying to their platform, they look
-for it, and do the usual build image, push to their container registry, and
-deploy it to a machine. However, if you've already packaged your application with
-`nix`, it would be nice to reuse that, and throw it into a docker image somehow
-instead of having to do a separate build process.
+<meta property="twitter:description" content="The current approach Fly.io recommends doing is you write a Dockerfile to
+build, and run your app on their platform. However, if you've already packaged
+your application with nix, it would be nice to capitalize on that, and
+throw it into a docker image somehow instead of having to create a
+separate build process.
 " />
 <meta property="twitter:image" content="https://sekun.net/assets/images/posts/deploying-nix-builds-to-fly-io/cover.jpg" />
 
@@ -69,18 +66,16 @@ instead of having to do a separate build process.
 </span>
 <p><em>In 9 days it would’ve been 2 years since I last posted. Wow time does… <strong>Fly</strong></em>.</p>
 <p>Around a month ago, I was messing around with <a href="https://fly.io">Fly.io</a> + <code>nix</code>
-for a toy project, and <a href="https://x.com/sekunho_/status/1835016387133350146">tweeted</a>
+for a toy project, and <a href="https://twitter.com/sekunho_/status/1835016387133350146">tweeted</a>
 about the experience. There I was asked by <a href="https://twitter.com/GemmaBlackUK">@GemmaBlackUK</a>
 if I had written an article about it, and thought well maybe it would make a
 nice article to start with after years of ignoring this blog. So here’s a debut
 article for my new blog engine (that I may rewrite yet again in a year).</p>
 <hr />
-<p>The current approach Fly.io recommends doing is you write a <code>Dockerfile</code> to run
-build, and run your app, and then when deploying to their platform, they look
-for it, and do the usual build image, push to their container registry, and
-deploy it to a machine. However, if you’ve already packaged your application with
-<code>nix</code>, it would be nice to reuse that, and throw it into a docker image somehow
-instead of having to do a separate build process.</p>
+<p>The current approach Fly.io recommends doing is you write a <code>Dockerfile</code> to
+build, and run your app on their platform. However, if you’ve already packaged
+your application with <code>nix</code>, it would be nice to capitalize on that, and throw
+it into a docker image somehow instead of having to create a separate build process.</p>
 <p>But do not fret, you <em>can</em> do something like that! Just with slightly more work.</p>
 <h2>Prerequisites</h2>
 <p>You’ll need to have the following installed:</p>
