@@ -297,7 +297,7 @@ interested in a couple of them. Specifically these:</p>
 <pre><code class="language-nix">pkgs.streamLayeredImage {
     name = "webecho";
     tag = "latest";
-    contents = [];
+    contents = [ self.packages.${system}.webecho ];
 
     config = {
       Cmd = [ "/bin/webecho" ];
