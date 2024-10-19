@@ -104,7 +104,9 @@ article for my new blog engine (that I may rewrite yet again in a year).</p>
 <p>The current approach Fly.io recommends doing is you write a <code>Dockerfile</code> to
 build, and run your app on their platform. However, if you’ve already packaged
 your application with <code>nix</code>, it would be nice to capitalize on that, and throw
-it into a docker image somehow instead of having to create a separate build process.</p>
+it into a docker image somehow instead of having to create a separate build process.
+This means reusing the exact tooling present in your nix dev shell down to the
+exact commit.</p>
 <p>But do not fret, you <em>can</em> do something like that! Just with slightly more work.</p>
 <h2>Prerequisites</h2>
 <p>You’ll need to have the following installed:</p>
@@ -215,8 +217,9 @@ async fn echo() -&gt; Html&lt;String&gt; {
     {
       packages.${system} = { inherit webecho; };
 
-      # This part is optional if you want to format your nix files, or have
-      # a nix LSP in your dev environment. Feel free to ignore otherwise.
+      # `nixpkgs-fmt`, and `nil` are optional. They're just helpful for working
+      # with nix source files. Though `dive`, and `flyctl` are tools used in this
+      # article.
       devShells.${system}.default = craneLib.devShell {
         packages = with pkgs; [ nixpkgs-fmt nil dive flyctl ];
       };
