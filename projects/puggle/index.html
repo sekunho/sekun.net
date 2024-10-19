@@ -31,13 +31,46 @@
     
 <h1>[ANN] puggle v0.1 - yet another static site generator</h1>
 <p><a href="https://github.com/sekunho/puggle">GitHub</a></p>
-<figure>
-    <img src="/assets/images/projects/puggle/cover.png" alt="A drawing of an ant eater" />
-    <figcaption>
-        Anteater from Im australischen Busch und an den Küsten des Korallenmeeres. Reiseerlebnisse und Beobachtungen eines Naturforschers in Australien, Neu Guinea und den Molukken (1866) -
-        <a href="https://creazilla.com/media/traditional-art/3446271/anteater-from-im-australischen-busch-und-an-den-kusten-des-korallenmeeres.-reiseerlebnisse-und-beobachtungen-eines-naturforschers-in-australien-neu-guinea-und-den-molukken-1866-published-by-richard-wolfgang-semon.">Source</a>
-    </figcaption>
-</figure>
+<div>
+
+</div>
+<div>
+
+  <x-figure>
+    <template shadowrootmode="open">
+      <figure>
+        <img src="/assets/images/projects/puggle/cover.png" alt="A drawing of an ant eater"/>
+        <figcaption><slot></slot></figcaption>
+      </figure>
+
+      <style>
+        figure {
+          
+
+          
+
+          display: block;
+          margin: 1.5rem auto;
+
+          img {
+            width: 100%;
+          }
+
+          figcaption {
+            text-align: center;
+            color: #a89984;
+            font-style: italic;
+          }
+        }
+      </style>
+    </template>
+    
+    Anteater from Im australischen Busch und an den Küsten des Korallenmeeres. Reiseerlebnisse und Beobachtungen eines Naturforschers in Australien, Neu Guinea und den Molukken (1866) -
+    <a href="https://creazilla.com/media/traditional-art/3446271/anteater-from-im-australischen-busch-und-an-den-kusten-des-korallenmeeres.-reiseerlebnisse-und-beobachtungen-eines-naturforschers-in-australien-neu-guinea-und-den-molukken-1866-published-by-richard-wolfgang-semon.">Source</a>
+
+  </x-figure>
+
+</div>
 <p><code>puggle</code> is a site generator for when you wish to turn your markdown files into
 a bunch of HTML pages.</p>
 <h2>Features</h2>
