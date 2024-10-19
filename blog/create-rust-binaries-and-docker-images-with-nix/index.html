@@ -60,7 +60,35 @@ of community effort to make this less painful.
 </nav>
     
 <h1>Create Rust binaries, and Docker images with Nix</h1>
-<img class="cover" src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/cover.png"/>
+<div>
+
+</div>
+<div>
+
+  <x-img>
+    <template shadowrootmode="open">
+      <img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/cover.png" alt="Nix logo with arrows pointing from it to the Rust logo, and the Docker logo"/>
+
+      <style>
+        x-img-foo:not(:defined) > template[shadowrootmode] ~ * {
+          display: none;
+        }
+
+        img {
+          
+
+          
+          width: 100%;
+          
+
+          display: block;
+          margin: 1rem auto;
+        }
+      </style>
+    </template>
+  </x-img>
+
+</div>
 <span class="post-metadata">
   Published on <time datetime="2022-04-11T06:20:00+00:00">2022-04-11 06:20 UTC</time>
 </span>
@@ -256,7 +284,32 @@ For more information about an error, try `rustc --explain E0425`.
 <p>It’s telling me that <code>cargo</code> can’t resolve the <code>escape</code> module for <code>maud_macros</code>.
 I took a look at the <a href="https://github.com/lambda-fairy/maud/tree/main/maud_macros/src">source</a>,
 and initially seemed like it’s a submodule:</p>
-<p><img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/maud-dir.png" alt="A list of directories with the escape.rs file being a submodule" /></p>
+<div>
+
+  <x-img>
+    <template shadowrootmode="open">
+      <img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/maud-dir.png" alt="Screenshot of maud's GitHub repository"/>
+
+      <style>
+        x-img-foo:not(:defined) > template[shadowrootmode] ~ * {
+          display: none;
+        }
+
+        img {
+          
+
+          
+          width: 100%;
+          
+
+          display: block;
+          margin: 1rem auto;
+        }
+      </style>
+    </template>
+  </x-img>
+
+</div>
 <p>Turns out there’s a ticket (<a href="https://github.com/nix-community/naersk/issues/110">#110</a>)
 pointing out that submodules isn’t supported by <code>naersk</code>. Fortunately, by the
 time I read this, there was a PR ready that fixed this. All it required was
@@ -284,7 +337,32 @@ albeit a symlink. I ran it with:</p>
   ./result/bin/emojied
 </code></pre>
 <p>…and I was greeted with this unstyled page:</p>
-<p><img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/no-static-assets.png" alt="screenshot of emojied with no style" /></p>
+<div>
+
+  <x-img>
+    <template shadowrootmode="open">
+      <img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/no-static-assets.png" alt="Unstyled emojied.net frontpage"/>
+
+      <style>
+        x-img-foo:not(:defined) > template[shadowrootmode] ~ * {
+          display: none;
+        }
+
+        img {
+          
+
+          
+          width: 100%;
+          
+
+          display: block;
+          margin: 1rem auto;
+        }
+      </style>
+    </template>
+  </x-img>
+
+</div>
 <h2>Problem 3: Static assets</h2>
 <p><code>emojied</code> is comprised of two things: a server binary, and static assets. These
 static assets are built using <code>tailwindcss</code>’s CLI, and <code>esbuild</code>… which was
@@ -362,7 +440,32 @@ added new native build inputs (build time), new steps to <code>buildPhase</code>
 PG__DBNAME="emojied_db" PG__HOST="localhost" PG__USER="sekun" PG__PORT="5432" \
   ./emojied
 </code></pre>
-<p><img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/has-static-assets.png" alt="screenshot of emojied with style" /></p>
+<div>
+
+  <x-img>
+    <template shadowrootmode="open">
+      <img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/has-static-assets.png" alt="STyled emojied.net frontpage"/>
+
+      <style>
+        x-img-foo:not(:defined) > template[shadowrootmode] ~ * {
+          display: none;
+        }
+
+        img {
+          
+
+          
+          width: 100%;
+          
+
+          display: block;
+          margin: 1rem auto;
+        }
+      </style>
+    </template>
+  </x-img>
+
+</div>
 <p>Beautiful.</p>
 <p>Okay, so that seems to work but I have to run <code>emojied</code> in the same directory as
 <code>public/</code> cause otherwise it won’t find anything. Which is expected because:</p>
@@ -633,7 +736,32 @@ jobs:
 as intended now that Nix is handling the important parts, which I can do
 locally. Not to say that Docker can’t do the same thing, but I found that there
 were some differences with volumes that made it painful to debug.</p>
-<p><img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/sweet-green-gh-actions.png" alt="A screenshot of a GitHub actions job" /></p>
+<div>
+
+  <x-img>
+    <template shadowrootmode="open">
+      <img src="/assets/images/posts/create-rust-binaries-and-docker-images-with-nix/sweet-green-gh-actions.png" alt="A screenshot of a GitHub actions job"/>
+
+      <style>
+        x-img-foo:not(:defined) > template[shadowrootmode] ~ * {
+          display: none;
+        }
+
+        img {
+          
+
+          
+          width: 100%;
+          
+
+          display: block;
+          margin: 1rem auto;
+        }
+      </style>
+    </template>
+  </x-img>
+
+</div>
 <h2>Conclusion</h2>
 <p>While it did simplify things such as dependency management across different
 environments, and the deploy process, setting up is pretty complicated. I had

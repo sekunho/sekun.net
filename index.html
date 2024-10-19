@@ -38,10 +38,42 @@
     with different languages/tools to gain new perspectives on how to solve problems.
   </p>
 
-  <figure>
-    <img src="/assets/images/hiro.webp" alt=""/>
-    <figcaption>Hiro is sleeping! <em>Ssshhh...</em></figcaption>
-  </figure>
+  
+  <x-figure>
+    <template shadowrootmode="open">
+      <figure>
+        <img src="&#x2f;assets&#x2f;images&#x2f;hiro.webp" alt="Hiro the shiba inu, sleeping"/>
+        <figcaption><slot></slot></figcaption>
+      </figure>
+
+      <style>
+        figure {
+          
+          width: 50%;
+          
+
+          
+
+          display: block;
+          margin: 1.5rem auto;
+
+          img {
+            width: 100%;
+          }
+
+          figcaption {
+            text-align: center;
+            color: #a89984;
+            font-style: italic;
+          }
+        }
+      </style>
+    </template>
+    
+    <span>Hiro is sleeping! <em>Ssshhh...</em></span>
+  
+  </x-figure>
+
 </section>
 
 
@@ -50,9 +82,9 @@
   <ul>
     
       <li>
-        <time datetime="2024-10-18T22:48:52Z">2024-10-18</time> -
-        <a href="/blog/deploying-nix-builds-to-fly-io">
-          Deploying Nix builds to Fly.io
+        <time datetime="2024-10-18T14:48:52Z">2024-10-18</time> -
+        <a href="/blog/deploying-nix-builds-on-fly-io">
+          Deploying Nix builds on Fly.io
         </a>
       </li>
     

@@ -60,7 +60,36 @@ I can't just hardcode these!
 </nav>
     
 <h1>Manage secrets in NixOS</h1>
-<img class="cover" src="/assets/images/posts/manage-secrets-in-nixos/cover.png"/>
+<div>
+
+
+</div>
+<div>
+
+  <x-img>
+    <template shadowrootmode="open">
+      <img src="/assets/images/posts/manage-secrets-in-nixos/cover.png" alt="NixOS logo, and a lock icon"/>
+
+      <style>
+        x-img-foo:not(:defined) > template[shadowrootmode] ~ * {
+          display: none;
+        }
+
+        img {
+          
+
+          
+          width: 100%;
+          
+
+          display: block;
+          margin: 1rem auto;
+        }
+      </style>
+    </template>
+  </x-img>
+
+</div>
 <span class="post-metadata">
   Published on <time datetime="2022-10-27T12:31:00+00:00">2022-10-27 12:31 UTC</time>
 </span>
@@ -160,12 +189,37 @@ and run this:</p>
 <pre><code>$ agenix -e emojiedDBCACert.age
 </code></pre>
 <p>This opens a text editor for you to put the secret in.</p>
-<img src="/assets/images/posts/manage-secrets-in-nixos/agenix-edit.png"/>
+<div>
+
+  <x-img>
+    <template shadowrootmode="open">
+      <img src="/assets/images/posts/manage-secrets-in-nixos/agenix-edit.png" alt="Screenshot of a text editor showing the secret censored"/>
+
+      <style>
+        x-img-foo:not(:defined) > template[shadowrootmode] ~ * {
+          display: none;
+        }
+
+        img {
+          
+
+          
+          width: 100%;
+          
+
+          display: block;
+          margin: 1rem auto;
+        }
+      </style>
+    </template>
+  </x-img>
+
+</div>
 <p>If you need to add public keys for existing age files, update the <code>secrets.nix</code>
 file accordingly, and run <code>agenix -r</code>. Make sure you’re in the same directory
 as the <code>secrets.nix</code>, and age files.</p>
 <p>It would show you something like this if it succeeds:</p>
-<pre><code>sekun@ichi /s/S/d/secrets (main)&gt; agenix -r
+<pre><code>$ agenix -r
 rekeying emojiedDBCACert.age...
 rekeying emojiedDBPassword.age...
 </code></pre>
@@ -345,7 +399,32 @@ starting the following units: emojied.service
 the following new units were started: run-agenix.d.mount
 </code></pre>
 <p>Which gives me this beautiful creation:</p>
-<img src="/assets/images/posts/manage-secrets-in-nixos/emojied-leaderboard.png"/>
+<div>
+
+  <x-img>
+    <template shadowrootmode="open">
+      <img src="/assets/images/posts/manage-secrets-in-nixos/emojied-leaderboard.png" alt="Screenshot of emojied.net's leaderboard"/>
+
+      <style>
+        x-img-foo:not(:defined) > template[shadowrootmode] ~ * {
+          display: none;
+        }
+
+        img {
+          
+
+          
+          width: 100%;
+          
+
+          display: block;
+          margin: 1rem auto;
+        }
+      </style>
+    </template>
+  </x-img>
+
+</div>
 
 
     <footer>
