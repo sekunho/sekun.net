@@ -544,5 +544,18 @@ useful though since there’s a <em>lot</em> of pre-built, static binaries out t
 </footer>
 
     <script>hljs.highlightAll();</script>
+
+    <script>
+      (function attachShadowRoots(root) {
+        root.querySelectorAll("template[shadowrootmode]").forEach(template => {
+          const mode = template.getAttribute("shadowrootmode");
+          const shadowRoot = template.parentNode.attachShadow({ mode });
+
+          shadowRoot.appendChild(template.content);
+          template.remove();
+          attachShadowRoots(shadowRoot);
+        });
+      })(document);
+    </script>
   </body>
 </html>
