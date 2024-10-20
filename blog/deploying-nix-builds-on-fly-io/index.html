@@ -293,16 +293,22 @@ async fn echo() -&gt; Html&lt;String&gt; {
 <h2>Building the container image with nix</h2>
 <p><code>nix</code> has a few options for creating images<sup class="footnote-reference"><a href="#1">1</a></sup> but the one we’ll be using is
 <code>pkgs.streamLayeredImage</code><sup class="footnote-reference"><a href="#2">2</a></sup>. It has a bunch of attributes in it but we’re only
-interested in a couple of them. Specifically these:</p>
-<pre><code class="language-nix">pkgs.streamLayeredImage {
-    name = "webecho";
-    tag = "latest";
-    contents = [ self.packages.${system}.webecho ];
+interested in a couple of them.</p>
+<p>Let’s define a new binding <code>webechoImg</code> that’s going to be our container image:</p>
+<pre><code class="language-nix"># flake.nix
+let
+  # previous let..in bindings
+  webechoImg = pkgs.streamLayeredImage {
+      name = "webecho";
+      tag = "latest";
+      contents = [ self.packages.${system}.webecho ];
 
-    config = {
-      Cmd = [ "/bin/webecho" ];
-    };
-}
+      config = {
+        Cmd = [ "/bin/webecho" ];
+      };
+  }
+in
+# snip
 </code></pre>
 <p>So the NixOS manual says this about the <code>contents</code> attribute:</p>
 <blockquote>
@@ -315,12 +321,24 @@ to the store paths). The actual files will be added in previous layers.</p>
 </blockquote>
 <p>Which is something we want for our <code>webecho</code> application since it’s what gets
 executed when the container runs.</p>
-<p>And build it like how we build <code>webecho</code> earlier. Only this time, this will build
-both the <code>webecho</code> application, and the image.</p>
+<p>Now we add a new binding to <code>packages</code>:</p>
+<pre><code class="language-nix"># flake.nix
+# ... snip
+in
+{
+  packages.${system} = { inherit webecho webechoImg; };
+# ... snip
+</code></pre>
+<blockquote>
+<p><code>inherit webecho;</code> is a shorthand for <code>webecho = webecho;</code>. If the name is the
+same, it can be useful for chaining a bunch of bindings instead of having to
+manually name, and bind values to it.</p>
+</blockquote>
+<p>and like <code>webecho</code>, this can be built like so:</p>
 <pre><code class="language-sh">$ nix build .#webechoImg
 </code></pre>
-<p>The generated image is stored in a <code>tar</code> file which we have to load into <code>docker</code>
-as an image.</p>
+<p>The generated image is stored in a <code>tar</code> file named as <code>result</code> which we have
+To load into <code>docker</code> as an image.</p>
 <pre><code class="language-sh">$ ./result | docker image load
 No 'fromImage' provided
 Creating layer 1 from paths: ['/nix/store/zvwpisszhpkkk8spqyya8n3bpm7wj39p-libunistring-1.1']
@@ -490,12 +508,16 @@ dashboard just to be sure.</p>
   </x-img>
 
 </div>
+<blockquote>
+<p>If you would like to check out the final result of everything in this article,
+give this <a href="https://github.com/sekunho/webecho">GitHub repository</a> a look!</p>
+</blockquote>
 <h2>Footnotes</h2>
 <div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
-<p><a href="https://ryantm.github.io/nixpkgs/builders/images/dockertools">https://ryantm.github.io/nixpkgs/builders/images/dockertools</a></p>
+<p><a href="https://ryantm.github.io/nixpkgs/builders/images/dockertools"><code>ryantm</code>’s NixOS manual</a></p>
 </div>
 <div class="footnote-definition" id="2"><sup class="footnote-definition-label">2</sup>
-<p><a href="https://nixos.org/manual/nixpkgs/unstable/#ssec-pkgs-dockerTools-streamLayeredImage">https://nixos.org/manual/nixpkgs/unstable/#ssec-pkgs-dockerTools-streamLayeredImage</a></p>
+<p><a href="https://nixos.org/manual/nixpkgs/unstable/#ssec-pkgs-dockerTools-streamLayeredImage">Official NixOS manual for <code>streamLayeredImage</code></a></p>
 </div>
 
 
