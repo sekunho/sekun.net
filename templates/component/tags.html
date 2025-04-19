@@ -1,7 +1,7 @@
 {% macro tags(ts) %}
-  <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+  <div class="tags">
   {% for tag in ts %}
-    <span style="padding: 0.25rem 0.5rem; background-color: #282828;">{{ tag }}</span>
+    <span>{{ tag }}</span>
   {% endfor %}
   </div>
 {% endmacro %}
