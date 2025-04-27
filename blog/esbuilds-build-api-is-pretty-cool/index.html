@@ -108,147 +108,157 @@ and/or minifying CSS/JS files. I’d rather not have to run two CLI programs jus
 to prepare everything for me. Running one <code>esbuild</code> script is just more convenient.</p>
 <p>But first, a basic build file!</p>
 <p>Run <code>npm init</code>, and add <code>esbuild</code> to your project’s dependencies.</p>
-<pre><code class="language-json">// package.json
-{
-  "name": "foo",
-  "version": "1.0.0",
-  "main": "watch.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" &amp;&amp; exit 1"
-  },
-  "type": "module",
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "esbuild": "^0.25.2",
-  }
-}
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;">// package.json
+</span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">  &quot;</span><span style="color:#b8bb26;">name</span><span style="color:#fbf1c7;">&quot;: &quot;</span><span style="color:#b8bb26;">foo</span><span style="color:#fbf1c7;">&quot;,
+</span><span style="color:#fbf1c7;">  &quot;</span><span style="color:#b8bb26;">version</span><span style="color:#fbf1c7;">&quot;: &quot;</span><span style="color:#b8bb26;">1.0.0</span><span style="color:#fbf1c7;">&quot;,
+</span><span style="color:#fbf1c7;">  &quot;</span><span style="color:#b8bb26;">main</span><span style="color:#fbf1c7;">&quot;: &quot;</span><span style="color:#b8bb26;">watch.js</span><span style="color:#fbf1c7;">&quot;,
+</span><span style="color:#fbf1c7;">  &quot;</span><span style="color:#b8bb26;">scripts</span><span style="color:#fbf1c7;">&quot;: {
+</span><span style="color:#fbf1c7;">    &quot;</span><span style="color:#b8bb26;">test</span><span style="color:#fbf1c7;">&quot;: &quot;</span><span style="color:#b8bb26;">echo </span><span style="color:#fb4934;">\&quot;</span><span style="color:#b8bb26;">Error: no test specified</span><span style="color:#fb4934;">\&quot;</span><span style="color:#b8bb26;"> &amp;&amp; exit 1</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#fbf1c7;">  },
+</span><span style="color:#fbf1c7;">  &quot;</span><span style="color:#b8bb26;">type</span><span style="color:#fbf1c7;">&quot;: &quot;</span><span style="color:#b8bb26;">module</span><span style="color:#fbf1c7;">&quot;,
+</span><span style="color:#fbf1c7;">  &quot;</span><span style="color:#b8bb26;">author</span><span style="color:#fbf1c7;">&quot;: &quot;&quot;,
+</span><span style="color:#fbf1c7;">  &quot;</span><span style="color:#b8bb26;">license</span><span style="color:#fbf1c7;">&quot;: &quot;</span><span style="color:#b8bb26;">ISC</span><span style="color:#fbf1c7;">&quot;,
+</span><span style="color:#fbf1c7;">  &quot;</span><span style="color:#b8bb26;">description</span><span style="color:#fbf1c7;">&quot;: &quot;&quot;,
+</span><span style="color:#fbf1c7;">  &quot;</span><span style="color:#b8bb26;">dependencies</span><span style="color:#fbf1c7;">&quot;: {
+</span><span style="color:#fbf1c7;">    &quot;</span><span style="color:#b8bb26;">esbuild</span><span style="color:#fbf1c7;">&quot;: &quot;</span><span style="color:#b8bb26;">^0.25.2</span><span style="color:#fbf1c7;">&quot;,
+</span><span style="color:#fbf1c7;">  }
+</span><span style="color:#fbf1c7;">}
+</span></pre>
 <p>Then create our <code>esbuild</code> build file</p>
-<pre><code class="language-javascript">// build.js
-import * as esbuild from 'esbuild'
-
-let result = await esbuild.build({
-    entryPoints: ["assets/**/*"],
-    outdir: "public",
-})
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;">// build.js
+</span><span style="color:#8ec07c;">import * as </span><span style="color:#83a598;">esbuild </span><span style="color:#8ec07c;">from </span><span style="color:#fbf1c7;">&#39;</span><span style="color:#b8bb26;">esbuild</span><span style="color:#fbf1c7;">&#39;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fb4934;">let </span><span style="color:#83a598;">result </span><span style="color:#8ec07c;">= </span><span style="color:#fb4934;">await </span><span style="color:#83a598;">esbuild</span><span style="color:#fbf1c7;">.</span><span style="color:#689d6a;">build</span><span style="color:#bdae93;">(</span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">    entryPoints: [&quot;</span><span style="color:#b8bb26;">assets/**/*</span><span style="color:#fbf1c7;">&quot;],
+</span><span style="color:#fbf1c7;">    outdir: &quot;</span><span style="color:#b8bb26;">public</span><span style="color:#fbf1c7;">&quot;,
+</span><span style="color:#fbf1c7;">}</span><span style="color:#bdae93;">)
+</span></pre>
 <p>This watches the <code>assets</code> directory for any changes, and spits out the “final”
 assets in the <code>public</code> directory as is. Nothing too interesting at the moment.</p>
 <p>Then in the <code>package.json</code> file, add an entry to <code>scripts</code> that executes our
 <code>esbuild</code> script:</p>
-<pre><code class="language-json">//package.json
-
-// ...
-"scripts": {
-  "build": "node build.js", // new!
-  "test": "echo \"Error: no test specified\" &amp;&amp; exit 1"
-},
-// ...
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;">//package.json
+</span><span style="color:#fbf1c7;">
+</span><span style="font-style:italic;color:#928374;">// ...
+</span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">scripts</span><span style="color:#fbf1c7;">&quot;: {
+</span><span style="color:#fbf1c7;">  &quot;</span><span style="color:#b8bb26;">build</span><span style="color:#fbf1c7;">&quot;: &quot;</span><span style="color:#b8bb26;">node build.js</span><span style="color:#fbf1c7;">&quot;, </span><span style="font-style:italic;color:#928374;">// new!
+</span><span style="color:#fbf1c7;">  &quot;</span><span style="color:#b8bb26;">test</span><span style="color:#fbf1c7;">&quot;: &quot;</span><span style="color:#b8bb26;">echo </span><span style="color:#fb4934;">\&quot;</span><span style="color:#b8bb26;">Error: no test specified</span><span style="color:#fb4934;">\&quot;</span><span style="color:#b8bb26;"> &amp;&amp; exit 1</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#fbf1c7;">},
+</span><span style="font-style:italic;color:#928374;">// ...
+</span></pre>
 <p>Let’s try running <code>npm run build</code> with this assets directory:</p>
-<pre><code> 4096 B    ┌─ style.css
- 4096 B ┌─ css
- 4096 B │  ┌─ script.js
- 4096 B ├─ script
- 4096 B │  ┌─ style.scss
- 4096 B ├─ sass
-12288 B assets
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#fbf1c7;"> </span><span style="color:#8ec07c;">4096</span><span style="color:#fbf1c7;"> B    ┌─ style.css
+</span><span style="color:#fbf1c7;"> </span><span style="color:#8ec07c;">4096</span><span style="color:#fbf1c7;"> B ┌─ css
+</span><span style="color:#fbf1c7;"> </span><span style="color:#8ec07c;">4096</span><span style="color:#fbf1c7;"> B │  ┌─ script.js
+</span><span style="color:#fbf1c7;"> </span><span style="color:#8ec07c;">4096</span><span style="color:#fbf1c7;"> B ├─ script
+</span><span style="color:#fbf1c7;"> </span><span style="color:#8ec07c;">4096</span><span style="color:#fbf1c7;"> B │  ┌─ style.scss
+</span><span style="color:#fbf1c7;"> </span><span style="color:#8ec07c;">4096</span><span style="color:#fbf1c7;"> B ├─ sass
+</span><span style="color:#8ec07c;">12288</span><span style="color:#fbf1c7;"> B assets
+</span></pre>
 <p>Well, I ran into this error:</p>
-<pre><code class="language-sh">&gt; foo@1.0.0 watch
-&gt; node watch.js
-
-✘ [ERROR] No loader is configured for ".scss" files: assets/sass/style.scss
-
-./node_modules/esbuild/lib/main.js:1477
-  let error = new Error(text);
-              ^
-
-Error: Build failed with 1 error:
-error: No loader is configured for ".scss" files: assets/sass/style.scss
-    at failureErrorWithLog (./node_modules/esbuild/lib/main.js:1477:15)
-    at ./node_modules/esbuild/lib/main.js:946:25
-    at ./node_modules/esbuild/lib/main.js:898:52
-    at buildResponseToResult (./node_modules/esbuild/lib/main.js:944:7)
-    at ./node_modules/esbuild/lib/main.js:971:16
-    at responseCallbacks.&lt;computed&gt; (./node_modules/esbuild/lib/main.js:623:9)
-    at handleIncomingPacket (./node_modules/esbuild/lib/main.js:678:12)
-    at Socket.readFromStdout (./node_modules/esbuild/lib/main.js:601:7)
-    at Socket.emit (node:events:518:28)
-    at addChunk (node:internal/streams/readable:561:12) {
-  errors: [Getter/Setter],
-  warnings: [Getter/Setter]
-}
-
-Node.js v22.14.0
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">&gt;</span><span style="color:#fbf1c7;"> foo@1.0.0 </span><span style="color:#8ec07c;">watch
+</span><span style="color:#8ec07c;">&gt;</span><span style="color:#fbf1c7;"> node </span><span style="color:#8ec07c;">watch.js
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#8ec07c;">✘ </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">ERROR</span><span style="color:#fb4934;">]</span><span style="color:#fbf1c7;"> No loader is configured for &quot;</span><span style="color:#b8bb26;">.scss</span><span style="color:#fbf1c7;">&quot; files: assets/sass/style.scss
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#8ec07c;">./node_modules/esbuild/lib/main.js:1477
+</span><span style="color:#fbf1c7;">  </span><span style="color:#8ec07c;">let</span><span style="color:#fbf1c7;"> error </span><span style="color:#8ec07c;">=</span><span style="color:#fbf1c7;"> new Error(text);
+</span><span style="color:#fbf1c7;">              </span><span style="color:#8ec07c;">^
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#8ec07c;">Error:</span><span style="color:#fbf1c7;"> Build failed with 1 error:
+</span><span style="color:#8ec07c;">error:</span><span style="color:#fbf1c7;"> No loader is configured for &quot;</span><span style="color:#b8bb26;">.scss</span><span style="color:#fbf1c7;">&quot; files: assets/sass/style.scss
+</span><span style="color:#fbf1c7;">    </span><span style="color:#8ec07c;">at</span><span style="color:#fbf1c7;"> failureErrorWithLog (./node_modules/esbuild/lib/main.js:1477:15)
+</span><span style="color:#fbf1c7;">    </span><span style="color:#8ec07c;">at</span><span style="color:#fbf1c7;"> ./node_modules/esbuild/lib/main.js:946:25
+</span><span style="color:#fbf1c7;">    </span><span style="color:#8ec07c;">at</span><span style="color:#fbf1c7;"> ./node_modules/esbuild/lib/main.js:898:52
+</span><span style="color:#fbf1c7;">    </span><span style="color:#8ec07c;">at</span><span style="color:#fbf1c7;"> buildResponseToResult (./node_modules/esbuild/lib/main.js:944:7)
+</span><span style="color:#fbf1c7;">    </span><span style="color:#8ec07c;">at</span><span style="color:#fbf1c7;"> ./node_modules/esbuild/lib/main.js:971:16
+</span><span style="color:#fbf1c7;">    </span><span style="color:#8ec07c;">at</span><span style="color:#fbf1c7;"> responseCallbacks.</span><span style="color:#8ec07c;">&lt;</span><span style="color:#fbf1c7;">computed</span><span style="color:#8ec07c;">&gt;</span><span style="color:#fbf1c7;"> (./node_modules/esbuild/lib/main.js:623:9)
+</span><span style="color:#fbf1c7;">    </span><span style="color:#8ec07c;">at</span><span style="color:#fbf1c7;"> handleIncomingPacket (./node_modules/esbuild/lib/main.js:678:12)
+</span><span style="color:#fbf1c7;">    </span><span style="color:#8ec07c;">at</span><span style="color:#fbf1c7;"> Socket.readFromStdout (./node_modules/esbuild/lib/main.js:601:7)
+</span><span style="color:#fbf1c7;">    </span><span style="color:#8ec07c;">at</span><span style="color:#fbf1c7;"> Socket.emit (node:events:518:28)
+</span><span style="color:#fbf1c7;">    </span><span style="color:#8ec07c;">at</span><span style="color:#fbf1c7;"> addChunk (node:internal/streams/readable:561:12) {
+</span><span style="color:#fbf1c7;">  </span><span style="color:#8ec07c;">errors: </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">Getter/Setter</span><span style="color:#fb4934;">]</span><span style="color:#fbf1c7;">,
+</span><span style="color:#fbf1c7;">  </span><span style="color:#8ec07c;">warnings: </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">Getter/Setter</span><span style="color:#fb4934;">]
+</span><span style="color:#fbf1c7;">}
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#8ec07c;">Node.js</span><span style="color:#fbf1c7;"> v22.14.0
+</span></pre>
 <p>The error message does make sense. <code>esbuild</code> by default does not handle <code>scss</code>
 files. I suppose it should only care about “native” web technologies so fair
 enough. Fortunately, they have a <code>plugins</code> property in their API as well. Even
 better, someone already wrote a loader for it!</p>
-<pre><code class="language-json">// package.json
-
-// ...
-"dependencies": {
-  "esbuild-sass-plugin": "^3.3.1"
-}
-// ...
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;">// package.json
+</span><span style="color:#fbf1c7;">
+</span><span style="font-style:italic;color:#928374;">// ...
+</span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">dependencies</span><span style="color:#fbf1c7;">&quot;: {
+</span><span style="color:#fbf1c7;">  &quot;</span><span style="color:#b8bb26;">esbuild-sass-plugin</span><span style="color:#fbf1c7;">&quot;: &quot;</span><span style="color:#b8bb26;">^3.3.1</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#fbf1c7;">}
+</span><span style="font-style:italic;color:#928374;">// ...
+</span></pre>
 <p>The <code>esbuild</code> API has a <code>plugins</code> key that allows us to specify callbacks whenever
 the file matches the filter set by the plugin. For <code>esbuild-sass-plugin</code>, its
 default pattern is <code>/.(s[ac]ss|css)$/</code> which in this case works just fine.</p>
-<pre><code class="language-js">import * as esbuild from 'esbuild'
-import { sassPlugin } from 'esbuild-sass-plugin'
-
-let ctx = await esbuild.build({
-  entryPoints: ["assets/**/*"],
-  outdir: "public",
-  minify: true, // &lt;-- 1
-  treeShaking: true, // &lt;-- 2
-  plugins: [sassPlugin()],
-}
-</code></pre>
-<blockquote>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">import * as </span><span style="color:#83a598;">esbuild </span><span style="color:#8ec07c;">from </span><span style="color:#fbf1c7;">&#39;</span><span style="color:#b8bb26;">esbuild</span><span style="color:#fbf1c7;">&#39;
+</span><span style="color:#8ec07c;">import </span><span style="color:#fbf1c7;">{ </span><span style="color:#83a598;">sassPlugin </span><span style="color:#fbf1c7;">} </span><span style="color:#8ec07c;">from </span><span style="color:#fbf1c7;">&#39;</span><span style="color:#b8bb26;">esbuild-sass-plugin</span><span style="color:#fbf1c7;">&#39;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fb4934;">let </span><span style="color:#83a598;">ctx </span><span style="color:#8ec07c;">= </span><span style="color:#fb4934;">await </span><span style="color:#83a598;">esbuild</span><span style="color:#fbf1c7;">.</span><span style="color:#689d6a;">build</span><span style="color:#bdae93;">(</span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">  entryPoints: [&quot;</span><span style="color:#b8bb26;">assets/**/*</span><span style="color:#fbf1c7;">&quot;],
+</span><span style="color:#fbf1c7;">  outdir: &quot;</span><span style="color:#b8bb26;">public</span><span style="color:#fbf1c7;">&quot;,
+</span><span style="color:#fbf1c7;">  minify: </span><span style="color:#d3869b;">true</span><span style="color:#fbf1c7;">, </span><span style="font-style:italic;color:#928374;">// &lt;-- 1
+</span><span style="color:#fbf1c7;">  treeShaking: </span><span style="color:#d3869b;">true</span><span style="color:#fbf1c7;">, </span><span style="font-style:italic;color:#928374;">// &lt;-- 2
+</span><span style="color:#fbf1c7;">  plugins: [</span><span style="color:#8ec07c;">sassPlugin</span><span style="color:#fbf1c7;">()],
+</span><span style="color:#fbf1c7;">}
+</span></pre>
+<blockquote class="markdown-alert-note">
 <p>1 &amp; 2 are not necessary but I just added it to show that you could do more stuff
 as well.</p>
 </blockquote>
 <p>Runnng <code>npm run build</code> creates a <code>public</code> directory with our assets built, and
 transformed by <code>esbuild</code>!</p>
-<pre><code> 4096 B    ┌─ style.css
- 4096 B ┌─ css
- 4096 B │  ┌─ script.js
- 4096 B ├─ script
- 4096 B │  ┌─ style.css
- 4096 B ├─ sass
-12288 B public
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#fbf1c7;"> </span><span style="color:#d3869b;">4096 </span><span style="color:#fabd2f;">B</span><span style="color:#fbf1c7;">    ┌─ </span><span style="color:#83a598;">style</span><span style="color:#fbf1c7;">.</span><span style="color:#83a598;">css
+</span><span style="color:#fbf1c7;"> </span><span style="color:#d3869b;">4096 </span><span style="color:#fabd2f;">B</span><span style="color:#fbf1c7;"> ┌─ </span><span style="color:#83a598;">css
+</span><span style="color:#fbf1c7;"> </span><span style="color:#d3869b;">4096 </span><span style="color:#fabd2f;">B</span><span style="color:#fbf1c7;"> │  ┌─ </span><span style="color:#83a598;">script</span><span style="color:#fbf1c7;">.</span><span style="color:#83a598;">js
+</span><span style="color:#fbf1c7;"> </span><span style="color:#d3869b;">4096 </span><span style="color:#fabd2f;">B</span><span style="color:#fbf1c7;"> ├─ </span><span style="color:#83a598;">script
+</span><span style="color:#fbf1c7;"> </span><span style="color:#d3869b;">4096 </span><span style="color:#fabd2f;">B</span><span style="color:#fbf1c7;"> │  ┌─ </span><span style="color:#83a598;">style</span><span style="color:#fbf1c7;">.</span><span style="color:#83a598;">css
+</span><span style="color:#fbf1c7;"> </span><span style="color:#d3869b;">4096 </span><span style="color:#fabd2f;">B</span><span style="color:#fbf1c7;"> ├─ </span><span style="color:#83a598;">sass
+</span><span style="color:#d3869b;">12288 </span><span style="color:#fabd2f;">B </span><span style="color:#fb4934;">public
+</span></pre>
 <p>And we can verify this by taking a look at <code>./public/sass</code></p>
-<pre><code class="language-css">.foo{color:#00f}@media (min-width: 40rem){.foo{color:red}}
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#d79921;">.</span><span style="color:#fabd2f;">foo</span><span style="color:#fbf1c7;">{</span><span style="color:#b8bb26;">color</span><span style="color:#fbf1c7;">:</span><span style="color:#b16286;">#</span><span style="color:#d3869b;">00f</span><span style="color:#fbf1c7;">}</span><span style="color:#cc241d;">@</span><span style="color:#fb4934;">media </span><span style="color:#fbf1c7;">(</span><span style="color:#b8bb26;">min-width</span><span style="color:#fbf1c7;">: </span><span style="color:#d3869b;">40</span><span style="color:#b16286;">rem</span><span style="color:#fbf1c7;">){</span><span style="color:#d79921;">.</span><span style="color:#fabd2f;">foo</span><span style="color:#fbf1c7;">{</span><span style="color:#b8bb26;">color</span><span style="color:#fbf1c7;">:</span><span style="color:#d3869b;">red</span><span style="color:#fbf1c7;">}}
+</span></pre>
 <h2>Packaging the build script with <code>nix</code></h2>
 <p>The script has two dependencies: <code>esbuild</code>, and a <code>sass</code> loader plugin
 <code>esbuild-sass-plugin</code>. I could use <code>npm install</code> to fetch these dependencies for
 me (like a normal person) but I’m too far gone to do anything normally, and that’s
 no fun!</p>
 <p>Create a <code>flake.nix</code> file with this:</p>
-<pre><code class="language-nix"># flake.nix
-{
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-  };
-
-  outputs = { self, nixpkgs }: {
-    devShells.x86_64-linux.default =
-      let
-        pkgs = import nixpkgs { system = "x86_64-linux"; };
-      in pkgs.mkShell {
-        buildInputs = with pkgs; [ nodejs_22 git ];
-      };
-  };
-}
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;"># flake.nix
+</span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">  </span><span style="color:#fabd2f;">inputs </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fabd2f;">nixpkgs</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">url </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">github:nixos/nixpkgs?ref=nixos-unstable</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">  };
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">  </span><span style="color:#fabd2f;">outputs </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">{ self</span><span style="color:#8ec07c;">, </span><span style="color:#fbf1c7;">nixpkgs }: {
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fabd2f;">devShells</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">x86_64-linux</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">default </span><span style="color:#8ec07c;">=
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fb4934;">let
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">pkgs </span><span style="color:#8ec07c;">= import </span><span style="color:#fbf1c7;">nixpkgs { </span><span style="color:#fabd2f;">system </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">x86_64-linux</span><span style="color:#fbf1c7;">&quot;; };
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fb4934;">in </span><span style="color:#fbf1c7;">pkgs</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">mkShell {
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">buildInputs </span><span style="color:#8ec07c;">= </span><span style="color:#fb4934;">with </span><span style="color:#fbf1c7;">pkgs; [ nodejs_22 git ];
+</span><span style="color:#fbf1c7;">      };
+</span><span style="color:#fbf1c7;">  };
+</span><span style="color:#fbf1c7;">}
+</span></pre>
 <blockquote>
 <p>If you’re using platforms other than <code>x86_64-linux</code>, feel free to change it
 accordingly, or use <code>flake-utils</code>
@@ -258,28 +268,29 @@ accordingly, or use <code>flake-utils</code>
 even know anymore. As a result, there are also lots of <code>nix</code> tools for it. But
 I recently discovered <a href="https://github.com/NixOS/nixpkgs/blob/master/doc/languages-frameworks/javascript.section.md#buildnpmpackage-javascript-buildnpmpackage"><code>pkgs.buildNpmPackage</code></a>,
 and it was surprisingly simple so that’s what we’ll use here.</p>
-<pre><code class="language-nix"># flake.nix
-
-  # ...
-  outputs = { self, nixpkgs }: {
-    packages.x86_64-linux.default =
-      let
-        pkgs = import nixpkgs { system = "x86_64-linux"; };
-      in
-        pkgs.buildNpmPackage {
-          name = "foo-static";
-          version = "1.0.0";
-          src = ./.;
-          npmDepsHash = "???";
-
-          installPhase = ''
-            mkdir $out
-            npm run build
-            cp -r public/ $out
-          '';
-        };
-  # ...
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;"># flake.nix
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">  </span><span style="font-style:italic;color:#928374;"># ...
+</span><span style="color:#fbf1c7;">  outputs </span><span style="background-color:#fb4934;color:#fbf1c7;">=</span><span style="color:#fbf1c7;"> { self</span><span style="color:#8ec07c;">, </span><span style="color:#fbf1c7;">nixpkgs }: {
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fabd2f;">packages</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">x86_64-linux</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">default </span><span style="color:#8ec07c;">=
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fb4934;">let
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">pkgs </span><span style="color:#8ec07c;">= import </span><span style="color:#fbf1c7;">nixpkgs { </span><span style="color:#fabd2f;">system </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">x86_64-linux</span><span style="color:#fbf1c7;">&quot;; };
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fb4934;">in
+</span><span style="color:#fbf1c7;">        pkgs</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">buildNpmPackage {
+</span><span style="color:#fbf1c7;">          </span><span style="color:#fabd2f;">name </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">foo-static</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">          </span><span style="color:#fabd2f;">version </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">1.0.0</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">          </span><span style="color:#fabd2f;">src </span><span style="color:#8ec07c;">= </span><span style="color:#b8bb26;">./.</span><span style="color:#fbf1c7;">;
+</span><span style="color:#fbf1c7;">          </span><span style="color:#fabd2f;">npmDepsHash </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">???</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">          </span><span style="color:#fabd2f;">installPhase </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&#39;&#39;
+</span><span style="color:#b8bb26;">            mkdir $out
+</span><span style="color:#b8bb26;">            npm run build
+</span><span style="color:#b8bb26;">            cp -r public/ $out
+</span><span style="color:#b8bb26;">          </span><span style="color:#fbf1c7;">&#39;&#39;;
+</span><span style="color:#fbf1c7;">        };
+</span><span style="color:#fbf1c7;">  </span><span style="font-style:italic;color:#928374;"># ...
+</span></pre>
 <p><code>name</code>, <code>version</code>, and <code>src</code> are straightforward. But what’s <code>npmDepsHash</code>?</p>
 <p>According to the docs:</p>
 <blockquote>
@@ -288,48 +299,52 @@ calculated in advance with <code>prefetch-npm-deps</code>.</p>
 </blockquote>
 <p>Okay, nice. So I just need to add <code>prefetch-npm-deps</code> to the dev shell, and point
 the <code>package-lock.json</code> to it.</p>
-<pre><code class="language-nix"># flake.nix
-
-# ...
-buildInputs = with pkgs; [ prefetch-npm-deps nodejs_22 git ];
-# ...
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;"># flake.nix
+</span><span style="color:#fbf1c7;">
+</span><span style="font-style:italic;color:#928374;"># ...
+</span><span style="color:#fbf1c7;">buildInputs </span><span style="background-color:#fb4934;color:#fbf1c7;">=</span><span style="color:#fbf1c7;"> </span><span style="background-color:#fb4934;color:#fbf1c7;">with</span><span style="color:#fbf1c7;"> pkgs</span><span style="background-color:#fb4934;color:#fbf1c7;">;</span><span style="color:#fbf1c7;"> [ prefetch-npm-deps nodejs_22 git ]</span><span style="background-color:#fb4934;color:#fbf1c7;">;</span><span style="color:#fbf1c7;">
+</span><span style="font-style:italic;color:#928374;"># ...
+</span></pre>
 <p>And run it</p>
-<pre><code>$ prefetch-npm-deps package-lock.json
-sha256-xF5hnIqw3atLZCa8H88sVOF8nrHXH5Qfh9I1mfTpFvo=
-</code></pre>
-<pre><code class="language-nix"># flake.nix
-
-  # ...
-  outputs = { self, nixpkgs }: {
-    packages.x86_64-linux.default =
-      let
-        pkgs = import nixpkgs { system = "x86_64-linux"; };
-      in
-        pkgs.buildNpmPackage {
-          name = "foo-static";
-          version = "1.0.0";
-          src = ./.;
-          npmDepsHash = "sha256-xF5hnIqw3atLZCa8H88sVOF8nrHXH5Qfh9I1mfTpFvo=";
-
-          installPhase = ''
-            mkdir $out
-            npm run build
-            cp -r public/ $out
-          '';
-        };
-  # ...
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">$</span><span style="color:#fbf1c7;"> prefetch-npm-deps package-lock.json
+</span><span style="color:#83a598;">sha256-xF5hnIqw3atLZCa8H88sVOF8nrHXH5Qfh9I1mfTpFvo</span><span style="color:#8ec07c;">=
+</span></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;"># flake.nix
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">  </span><span style="font-style:italic;color:#928374;"># ...
+</span><span style="color:#fbf1c7;">  outputs </span><span style="background-color:#fb4934;color:#fbf1c7;">=</span><span style="color:#fbf1c7;"> { self</span><span style="color:#8ec07c;">, </span><span style="color:#fbf1c7;">nixpkgs }: {
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fabd2f;">packages</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">x86_64-linux</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">default </span><span style="color:#8ec07c;">=
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fb4934;">let
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">pkgs </span><span style="color:#8ec07c;">= import </span><span style="color:#fbf1c7;">nixpkgs { </span><span style="color:#fabd2f;">system </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">x86_64-linux</span><span style="color:#fbf1c7;">&quot;; };
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fb4934;">in
+</span><span style="color:#fbf1c7;">        pkgs</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">buildNpmPackage {
+</span><span style="color:#fbf1c7;">          </span><span style="color:#fabd2f;">name </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">foo-static</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">          </span><span style="color:#fabd2f;">version </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">1.0.0</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">          </span><span style="color:#fabd2f;">src </span><span style="color:#8ec07c;">= </span><span style="color:#b8bb26;">./.</span><span style="color:#fbf1c7;">;
+</span><span style="color:#fbf1c7;">          </span><span style="color:#fabd2f;">npmDepsHash </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">sha256-xF5hnIqw3atLZCa8H88sVOF8nrHXH5Qfh9I1mfTpFvo=</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">          </span><span style="color:#fabd2f;">installPhase </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&#39;&#39;
+</span><span style="color:#b8bb26;">            mkdir $out
+</span><span style="color:#b8bb26;">            npm run build
+</span><span style="color:#b8bb26;">            cp -r public/ $out
+</span><span style="color:#b8bb26;">          </span><span style="color:#fbf1c7;">&#39;&#39;;
+</span><span style="color:#fbf1c7;">        };
+</span><span style="color:#fbf1c7;">  </span><span style="font-style:italic;color:#928374;"># ...
+</span></pre>
 <p>Now we can run <code>nix build</code>, which gets us this:</p>
-<pre><code> 4096 B       ┌─ style.css
- 4096 B    ┌─ css
- 4096 B    │  ┌─ script.js
- 4096 B    ├─ script
- 4096 B    │  ┌─ style.css
- 4096 B    ├─ sass
-12288 B ┌─ public
-12288 B qydjw7ghmmz46lpcfa6sf4jj6sisl36z-foo-static
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#fbf1c7;"> </span><span style="color:#8ec07c;">4096</span><span style="color:#fbf1c7;"> B       ┌─ style.css
+</span><span style="color:#fbf1c7;"> </span><span style="color:#8ec07c;">4096</span><span style="color:#fbf1c7;"> B    ┌─ css
+</span><span style="color:#fbf1c7;"> </span><span style="color:#8ec07c;">4096</span><span style="color:#fbf1c7;"> B    │  ┌─ script.js
+</span><span style="color:#fbf1c7;"> </span><span style="color:#8ec07c;">4096</span><span style="color:#fbf1c7;"> B    ├─ script
+</span><span style="color:#fbf1c7;"> </span><span style="color:#8ec07c;">4096</span><span style="color:#fbf1c7;"> B    │  ┌─ style.css
+</span><span style="color:#fbf1c7;"> </span><span style="color:#8ec07c;">4096</span><span style="color:#fbf1c7;"> B    ├─ sass
+</span><span style="color:#8ec07c;">12288</span><span style="color:#fbf1c7;"> B ┌─ public
+</span><span style="color:#8ec07c;">12288</span><span style="color:#fbf1c7;"> B qydjw7ghmmz46lpcfa6sf4jj6sisl36z-foo-static
+</span></pre>
 <p>So now I’m able to use these as a dependency of another <code>nix</code> derivation. Neat!</p>
 <blockquote>
 <p>If you would like to check out the final result of everything in this article,

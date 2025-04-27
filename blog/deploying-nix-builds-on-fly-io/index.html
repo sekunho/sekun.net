@@ -128,23 +128,24 @@ exact commit.</p>
 <p>The rest of the tools needed will be supplied by <code>nix</code> in a dev shell we’ll make.</p>
 <p>To start everything off, let’s make a <code>flake.nix</code> by running <code>nix flake init</code>
 in your directory of choice. This generates the file with the following:</p>
-<pre><code class="language-nix"># flake.nix
-{
-  description = "A very basic flake";
-
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-  };
-
-  outputs = { self, nixpkgs }: {
-    # NOTE: You can delete this
-    packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
-
-    # NOTE: and this because we don't need them
-    packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
-  };
-}
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;"># flake.nix
+</span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">  </span><span style="color:#fabd2f;">description </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">A very basic flake</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">  </span><span style="color:#fabd2f;">inputs </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fabd2f;">nixpkgs</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">url </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">github:nixos/nixpkgs?ref=nixos-unstable</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">  };
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">  </span><span style="color:#fabd2f;">outputs </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">{ self</span><span style="color:#8ec07c;">, </span><span style="color:#fbf1c7;">nixpkgs }: {
+</span><span style="color:#fbf1c7;">    </span><span style="font-style:italic;color:#928374;"># NOTE: You can delete this
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fabd2f;">packages</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">x86_64-linux</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">hello </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">nixpkgs</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">legacyPackages</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">x86_64-linux</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">hello;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">    </span><span style="font-style:italic;color:#928374;"># NOTE: and this because we don&#39;t need them
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fabd2f;">packages</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">x86_64-linux</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">default </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">self</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">packages</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">x86_64-linux</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">hello;
+</span><span style="color:#fbf1c7;">  };
+</span><span style="color:#fbf1c7;">}
+</span></pre>
 <p>The application that’s gonna run in the image is one that reads an environment
 variable <code>APP_ECHO_ME</code>, and renders it into an HTML page served by <code>axum</code>. The
 environment will be set through Fly secrets.</p>
@@ -155,89 +156,91 @@ section.</p>
 </blockquote>
 <p>The gist of it is <code>webecho</code> looks for the environment variable <code>APP_ECHO_ME</code>,
 and renders it into an HTML page that’s served by axum.</p>
-<pre><code class="language-rust">// main.rs
-use axum::{response::Html, routing, Router};
-
-#[tokio::main]
-async fn main() {
-    // please dkm for unwraps
-    let app = Router::new().route("/echo", routing::get(echo));
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
-}
-
-async fn echo() -&gt; Html&lt;String&gt; {
-    match std::env::var("APP_ECHO_ME") {
-        Ok(val) =&gt; Html(format!("&lt;h1&gt;{val}&lt;/h1&gt;")),
-        Err(_) =&gt; Html(format!("bruh")),
-    }
-}
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;">// main.rs
+</span><span style="color:#fb4934;">use </span><span style="color:#fbf1c7;">axum::{response::Html, routing, Router};
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">#[</span><span style="color:#83a598;">tokio</span><span style="color:#fbf1c7;">::</span><span style="color:#83a598;">main</span><span style="color:#fbf1c7;">]
+</span><span style="color:#fbf1c7;">async </span><span style="color:#8ec07c;">fn </span><span style="color:#b8bb26;">main</span><span style="color:#fbf1c7;">() {
+</span><span style="color:#fbf1c7;">    </span><span style="font-style:italic;color:#928374;">// please dkm for unwraps
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fb4934;">let</span><span style="color:#fbf1c7;"> app </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">Router::new().</span><span style="color:#8ec07c;">route</span><span style="color:#fbf1c7;">(&quot;</span><span style="color:#b8bb26;">/echo</span><span style="color:#fbf1c7;">&quot;, routing::get(echo));
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fb4934;">let</span><span style="color:#fbf1c7;"> listener </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">tokio::net::TcpListener::bind(&quot;</span><span style="color:#b8bb26;">0.0.0.0:8080</span><span style="color:#fbf1c7;">&quot;).await.</span><span style="color:#8ec07c;">unwrap</span><span style="color:#fbf1c7;">();
+</span><span style="color:#fbf1c7;">    axum::serve(listener, app).await.</span><span style="color:#8ec07c;">unwrap</span><span style="color:#fbf1c7;">();
+</span><span style="color:#fbf1c7;">}
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">async </span><span style="color:#8ec07c;">fn </span><span style="color:#b8bb26;">echo</span><span style="color:#fbf1c7;">() -&gt; Html&lt;</span><span style="color:#fabd2f;">String</span><span style="color:#fbf1c7;">&gt; {
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fb4934;">match </span><span style="color:#fbf1c7;">std::env::var(&quot;</span><span style="color:#b8bb26;">APP_ECHO_ME</span><span style="color:#fbf1c7;">&quot;) {
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">Ok</span><span style="color:#fbf1c7;">(val) </span><span style="color:#8ec07c;">=&gt;</span><span style="color:#fbf1c7;"> Html(format!(&quot;</span><span style="color:#b8bb26;">&lt;h1&gt;</span><span style="color:#8ec07c;">{val}</span><span style="color:#b8bb26;">&lt;/h1&gt;</span><span style="color:#fbf1c7;">&quot;)),
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">Err</span><span style="color:#fbf1c7;">(</span><span style="color:#8ec07c;">_</span><span style="color:#fbf1c7;">) </span><span style="color:#8ec07c;">=&gt;</span><span style="color:#fbf1c7;"> Html(format!(&quot;</span><span style="color:#b8bb26;">bruh</span><span style="color:#fbf1c7;">&quot;)),
+</span><span style="color:#fbf1c7;">    }
+</span><span style="color:#fbf1c7;">}
+</span></pre>
 <p>Which we packaged with <code>nix</code> like so</p>
-<pre><code class="language-nix"># flake.nix
-{
-  inputs = {
-    # We set the nix packages repo to the latest stable (at the time of writing)
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
-    # Used for packaging rust applications
-    crane.url = "github:ipetkov/crane";
-
-    # Used for setting up rust toolchain
-    fenix = {
-      url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.rust-analyzer-src.follows = "";
-    };
-  };
-
-  outputs = { self, nixpkgs, crane, fenix }:
-    let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
-
-      # We're telling crane about the rust toolchain we want to use
-      craneLib = (crane.mkLib pkgs).overrideToolchain
-        fenix.packages.${system}.stable.toolchain;
-
-      # Project source for crane to look in
-      src = pkgs.lib.cleanSourceWith {
-        src = ./.;
-
-        filter = path: type:
-          (craneLib.filterCargoSources path type)
-        ;
-      };
-
-      commonArgs = {
-        inherit src;
-        version = "0.1.0";
-        strictDeps = true;
-        pname = "webecho";
-        name = "webecho";
-        buildInputs = [ ];
-        nativeBuildInputs = [ ];
-      };
-
-      cargoArtifacts = craneLib.buildDepsOnly commonArgs;
-
-      webecho = craneLib.buildPackage (commonArgs // {
-        inherit cargoArtifacts;
-        doCheck = false;
-        CARGO_PROFILE = "release";
-      });
-    in
-    {
-      packages.${system} = { inherit webecho; };
-
-      # `nixpkgs-fmt`, and `nil` are optional. They're just helpful for working
-      # with nix source files. Though `dive`, and `flyctl` are tools used in this
-      # article.
-      devShells.${system}.default = craneLib.devShell {
-        packages = with pkgs; [ nixpkgs-fmt nil dive flyctl ];
-      };
-    };
-}
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;"># flake.nix
+</span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">  </span><span style="color:#fabd2f;">inputs </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">    </span><span style="font-style:italic;color:#928374;"># We set the nix packages repo to the latest stable (at the time of writing)
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fabd2f;">nixpkgs</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">url </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">github:NixOS/nixpkgs/nixos-24.05</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">    </span><span style="font-style:italic;color:#928374;"># Used for packaging rust applications
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fabd2f;">crane</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">url </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">github:ipetkov/crane</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">    </span><span style="font-style:italic;color:#928374;"># Used for setting up rust toolchain
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fabd2f;">fenix </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">url </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">github:nix-community/fenix</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">inputs</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">nixpkgs</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">follows </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">nixpkgs</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">inputs</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">rust-analyzer-src</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">follows </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;&quot;;
+</span><span style="color:#fbf1c7;">    };
+</span><span style="color:#fbf1c7;">  };
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">  </span><span style="color:#fabd2f;">outputs </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">{ self</span><span style="color:#8ec07c;">, </span><span style="color:#fbf1c7;">nixpkgs</span><span style="color:#8ec07c;">, </span><span style="color:#fbf1c7;">crane</span><span style="color:#8ec07c;">, </span><span style="color:#fbf1c7;">fenix }:
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fb4934;">let
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">system </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">x86_64-linux</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">pkgs </span><span style="color:#8ec07c;">= import </span><span style="color:#fbf1c7;">nixpkgs { </span><span style="color:#fb4934;">inherit </span><span style="color:#fabd2f;">system</span><span style="color:#fbf1c7;">; };
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">      </span><span style="font-style:italic;color:#928374;"># We&#39;re telling crane about the rust toolchain we want to use
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">craneLib </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">(crane</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">mkLib pkgs)</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">overrideToolchain
+</span><span style="color:#fbf1c7;">        fenix</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">packages</span><span style="color:#8ec07c;">.</span><span style="font-style:italic;color:#8ec07c;">${</span><span style="font-style:italic;color:#fbf1c7;">system</span><span style="font-style:italic;color:#8ec07c;">}</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">stable</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">toolchain;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">      </span><span style="font-style:italic;color:#928374;"># Project source for crane to look in
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">src </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">pkgs</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">lib</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">cleanSourceWith {
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">src </span><span style="color:#8ec07c;">= </span><span style="color:#b8bb26;">./.</span><span style="color:#fbf1c7;">;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">filter </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">path: type:
+</span><span style="color:#fbf1c7;">          (craneLib</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">filterCargoSources path type)
+</span><span style="color:#fbf1c7;">        ;
+</span><span style="color:#fbf1c7;">      };
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">commonArgs </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fb4934;">inherit </span><span style="color:#fabd2f;">src</span><span style="color:#fbf1c7;">;
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">version </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">0.1.0</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">strictDeps </span><span style="color:#8ec07c;">= </span><span style="color:#d3869b;">true</span><span style="color:#fbf1c7;">;
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">pname </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">webecho</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">name </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">webecho</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">buildInputs </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">[ ];
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">nativeBuildInputs </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">[ ];
+</span><span style="color:#fbf1c7;">      };
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">cargoArtifacts </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">craneLib</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">buildDepsOnly commonArgs;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">webecho </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">craneLib</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">buildPackage (commonArgs </span><span style="color:#8ec07c;">// </span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fb4934;">inherit </span><span style="color:#fabd2f;">cargoArtifacts</span><span style="color:#fbf1c7;">;
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">doCheck </span><span style="color:#8ec07c;">= </span><span style="color:#d3869b;">false</span><span style="color:#fbf1c7;">;
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">CARGO_PROFILE </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">release</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">      });
+</span><span style="color:#fbf1c7;">    </span><span style="color:#fb4934;">in
+</span><span style="color:#fbf1c7;">    {
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">packages</span><span style="color:#fbf1c7;">.</span><span style="font-style:italic;color:#8ec07c;">${</span><span style="font-style:italic;color:#fbf1c7;">system</span><span style="font-style:italic;color:#8ec07c;">} </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">{ </span><span style="color:#fb4934;">inherit </span><span style="color:#fabd2f;">webecho</span><span style="color:#fbf1c7;">; };
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">      </span><span style="font-style:italic;color:#928374;"># `nixpkgs-fmt`, and `nil` are optional. They&#39;re just helpful for working
+</span><span style="color:#fbf1c7;">      </span><span style="font-style:italic;color:#928374;"># with nix source files. Though `dive`, and `flyctl` are tools used in this
+</span><span style="color:#fbf1c7;">      </span><span style="font-style:italic;color:#928374;"># article.
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">devShells</span><span style="color:#fbf1c7;">.</span><span style="font-style:italic;color:#8ec07c;">${</span><span style="font-style:italic;color:#fbf1c7;">system</span><span style="font-style:italic;color:#8ec07c;">}</span><span style="color:#fbf1c7;">.</span><span style="color:#fabd2f;">default </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">craneLib</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">devShell {
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">packages </span><span style="color:#8ec07c;">= </span><span style="color:#fb4934;">with </span><span style="color:#fbf1c7;">pkgs; [ nixpkgs-fmt nil dive flyctl ];
+</span><span style="color:#fbf1c7;">      };
+</span><span style="color:#fbf1c7;">    };
+</span><span style="color:#fbf1c7;">}
+</span></pre>
 <p>We can run <code>webecho</code> with <code>nix run .#webecho</code>, and then visit <code>http://localhost:8080/echo</code>.</p>
 <div>
 
@@ -307,21 +310,22 @@ async fn echo() -&gt; Html&lt;String&gt; {
 <code>pkgs.streamLayeredImage</code><sup class="footnote-reference"><a href="#2">2</a></sup>. It has a bunch of attributes in it but we’re only
 interested in a couple of them.</p>
 <p>Let’s define a new binding <code>webechoImg</code> that’s going to be our container image:</p>
-<pre><code class="language-nix"># flake.nix
-let
-  # previous let..in bindings
-  webechoImg = pkgs.streamLayeredImage {
-      name = "webecho";
-      tag = "latest";
-      contents = [ self.packages.${system}.webecho ];
-
-      config = {
-        Cmd = [ "/bin/webecho" ];
-      };
-  }
-in
-# snip
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;"># flake.nix
+</span><span style="color:#fb4934;">let
+</span><span style="color:#fbf1c7;">  </span><span style="font-style:italic;color:#928374;"># previous let..in bindings
+</span><span style="color:#fbf1c7;">  </span><span style="color:#fabd2f;">webechoImg </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">pkgs</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">streamLayeredImage {
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">name </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">webecho</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">tag </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">latest</span><span style="color:#fbf1c7;">&quot;;
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">contents </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">[ self</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">packages</span><span style="color:#8ec07c;">.</span><span style="font-style:italic;color:#8ec07c;">${</span><span style="font-style:italic;color:#fbf1c7;">system</span><span style="font-style:italic;color:#8ec07c;">}</span><span style="color:#8ec07c;">.</span><span style="color:#fbf1c7;">webecho ];
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">      </span><span style="color:#fabd2f;">config </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">        </span><span style="color:#fabd2f;">Cmd </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">[ &quot;</span><span style="color:#b8bb26;">/bin/webecho</span><span style="color:#fbf1c7;">&quot; ];
+</span><span style="color:#fbf1c7;">      };
+</span><span style="color:#fbf1c7;">  }
+</span><span style="background-color:#fb4934;color:#fbf1c7;">in</span><span style="color:#fbf1c7;">
+</span><span style="font-style:italic;color:#928374;"># snip
+</span></pre>
 <p>So the NixOS manual says this about the <code>contents</code> attribute:</p>
 <blockquote>
 <p>Directories whose contents will be added to the generated image. Things that
@@ -334,40 +338,43 @@ to the store paths). The actual files will be added in previous layers.</p>
 <p>Which is something we want for our <code>webecho</code> application since it’s what gets
 executed when the container runs.</p>
 <p>Now we add a new binding to <code>packages</code>:</p>
-<pre><code class="language-nix"># flake.nix
-# ... snip
-in
-{
-  packages.${system} = { inherit webecho webechoImg; };
-# ... snip
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;"># flake.nix
+</span><span style="font-style:italic;color:#928374;"># ... snip
+</span><span style="background-color:#fb4934;color:#fbf1c7;">in</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">  </span><span style="color:#fabd2f;">packages</span><span style="color:#fbf1c7;">.</span><span style="font-style:italic;color:#8ec07c;">${</span><span style="font-style:italic;color:#fbf1c7;">system</span><span style="font-style:italic;color:#8ec07c;">} </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">{ </span><span style="color:#fb4934;">inherit </span><span style="color:#fabd2f;">webecho webechoImg</span><span style="color:#fbf1c7;">; };
+</span><span style="font-style:italic;color:#928374;"># ... snip
+</span></pre>
 <blockquote>
 <p><code>inherit webecho;</code> is a shorthand for <code>webecho = webecho;</code>. If the name is the
 same, it can be useful for chaining a bunch of bindings instead of having to
 manually name, and bind values to it.</p>
 </blockquote>
 <p>and like <code>webecho</code>, this can be built like so:</p>
-<pre><code class="language-sh">$ nix build .#webechoImg
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">$</span><span style="color:#fbf1c7;"> nix build .#webechoImg
+</span></pre>
 <p>The generated image is stored in a <code>tar</code> file named as <code>result</code> which we have
 To load into <code>docker</code> as an image.</p>
-<pre><code class="language-sh">$ ./result | docker image load
-No 'fromImage' provided
-Creating layer 1 from paths: ['/nix/store/zvwpisszhpkkk8spqyya8n3bpm7wj39p-libunistring-1.1']
-Creating layer 2 from paths: ['/nix/store/9jivp79yv91fl1i6ayq2107a78q7k43i-libidn2-2.3.7']
-Creating layer 3 from paths: ['/nix/store/2y852kcvb7shrj8f3z8j22pa0iybcbgj-xgcc-13.2.0-libgcc']
-Creating layer 4 from paths: ['/nix/store/c10zhkbp6jmyh0xc5kd123ga8yy2p4hk-glibc-2.39-52']
-Creating layer 5 from paths: ['/nix/store/yfd49ay99aa1a0jg80jsvnxbyl61fsh6-gcc-13.2.0-libgcc']
-Creating layer 6 from paths: ['/nix/store/swcl0ynnia5c57i6qfdcrqa72j7877mg-gcc-13.2.0-lib']
-Creating layer 7 from paths: ['/nix/store/5w470zmki3wby35ki8ql3xhrd8x450lf-webecho']
-Creating layer 8 with customisation...
-Adding manifests...
-Done.
-14d9ed21e5fa: Loading layer [==================================================&gt;]    983kB/983kB
-18dc56492fda: Loading layer [==================================================&gt;]  10.24kB/10.24kB
-The image webecho:latest already exists, renaming the old one with ID sha256:71901dfab2e5a591cf264891021db0bc258927788db5786f18fbbb8835fc6b5e to empty string
-Loaded image: webecho:latest
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">$</span><span style="color:#fbf1c7;"> ./result </span><span style="color:#8ec07c;">| docker</span><span style="color:#fbf1c7;"> image load
+</span><span style="color:#8ec07c;">No </span><span style="color:#fbf1c7;">&#39;</span><span style="color:#b8bb26;">fromImage</span><span style="color:#fbf1c7;">&#39; provided
+</span><span style="color:#8ec07c;">Creating</span><span style="color:#fbf1c7;"> layer 1 from paths: </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#b8bb26;">/nix/store/zvwpisszhpkkk8spqyya8n3bpm7wj39p-libunistring-1.1</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#fb4934;">]
+</span><span style="color:#8ec07c;">Creating</span><span style="color:#fbf1c7;"> layer 2 from paths: </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#b8bb26;">/nix/store/9jivp79yv91fl1i6ayq2107a78q7k43i-libidn2-2.3.7</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#fb4934;">]
+</span><span style="color:#8ec07c;">Creating</span><span style="color:#fbf1c7;"> layer 3 from paths: </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#b8bb26;">/nix/store/2y852kcvb7shrj8f3z8j22pa0iybcbgj-xgcc-13.2.0-libgcc</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#fb4934;">]
+</span><span style="color:#8ec07c;">Creating</span><span style="color:#fbf1c7;"> layer 4 from paths: </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#b8bb26;">/nix/store/c10zhkbp6jmyh0xc5kd123ga8yy2p4hk-glibc-2.39-52</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#fb4934;">]
+</span><span style="color:#8ec07c;">Creating</span><span style="color:#fbf1c7;"> layer 5 from paths: </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#b8bb26;">/nix/store/yfd49ay99aa1a0jg80jsvnxbyl61fsh6-gcc-13.2.0-libgcc</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#fb4934;">]
+</span><span style="color:#8ec07c;">Creating</span><span style="color:#fbf1c7;"> layer 6 from paths: </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#b8bb26;">/nix/store/swcl0ynnia5c57i6qfdcrqa72j7877mg-gcc-13.2.0-lib</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#fb4934;">]
+</span><span style="color:#8ec07c;">Creating</span><span style="color:#fbf1c7;"> layer 7 from paths: </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#b8bb26;">/nix/store/5w470zmki3wby35ki8ql3xhrd8x450lf-webecho</span><span style="color:#fbf1c7;">&#39;</span><span style="color:#fb4934;">]
+</span><span style="color:#8ec07c;">Creating</span><span style="color:#fbf1c7;"> layer 8 with customisation...
+</span><span style="color:#8ec07c;">Adding</span><span style="color:#fbf1c7;"> manifests...
+</span><span style="color:#8ec07c;">Done.
+</span><span style="color:#8ec07c;">14d9ed21e5fa:</span><span style="color:#fbf1c7;"> Loading layer </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">==================================================&gt;</span><span style="color:#fb4934;">]</span><span style="color:#fbf1c7;">    983kB/983kB
+</span><span style="color:#8ec07c;">18dc56492fda:</span><span style="color:#fbf1c7;"> Loading layer </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">==================================================&gt;</span><span style="color:#fb4934;">]</span><span style="color:#fbf1c7;">  10.24kB/10.24kB
+</span><span style="color:#8ec07c;">The</span><span style="color:#fbf1c7;"> image webecho:latest already exists, renaming the old one with ID sha256:71901dfab2e5a591cf264891021db0bc258927788db5786f18fbbb8835fc6b5e to empty string
+</span><span style="color:#8ec07c;">Loaded</span><span style="color:#fbf1c7;"> image: webecho:latest
+</span></pre>
 <p>You can look around the image with <code>dive webecho:latest</code>.</p>
 <div>
 
@@ -396,71 +403,77 @@ Loaded image: webecho:latest
 
 </div>
 <p>Then you can run this image as if it were any other image created from a <code>Dockerfile</code>!</p>
-<pre><code class="language-sh">$ docker run -p 8080:8080 webecho:latest
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">$</span><span style="color:#fbf1c7;"> docker run -p 8080:8080 webecho:latest
+</span></pre>
 <p>And when we try to <code>curl</code> it</p>
-<pre><code class="language-sh">$ curl http://localhost:8080/echo
-bruh⏎
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">$</span><span style="color:#fbf1c7;"> curl http://localhost:8080/echo
+</span><span style="color:#8ec07c;">bruh⏎
+</span></pre>
 <p>So far looks pretty good.</p>
 <h2>Deploying to Fly.io</h2>
 <p>This part shouldn’t differ too much from the usual deployment process.</p>
 <p>First, login your Fly account with <a href="https://fly.io/docs/flyctl/auth-login/"><code>flyctl auth login</code></a>.
 This opens a new tab in your browser for you to complete the login process.</p>
-<pre><code class="language-sh">$ fly auth login
-$ fly auth docker # authenticates your local docker to push to their container registry
-$ fly apps create webecho # create an application called webecho under your account
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">$</span><span style="color:#fbf1c7;"> fly auth login
+</span><span style="color:#8ec07c;">$</span><span style="color:#fbf1c7;"> fly auth docker </span><span style="font-style:italic;color:#928374;"># authenticates your local docker to push to their container registry
+</span><span style="color:#8ec07c;">$</span><span style="color:#fbf1c7;"> fly apps create webecho </span><span style="font-style:italic;color:#928374;"># create an application called webecho under your account
+</span></pre>
 <p>Then we need to tag the image to something that Fly.io expects which is in the format
 of <code>registry.fly.io/&lt;APP_NAME&gt;:&lt;VERSION&gt;</code>, and push it to their registry.</p>
-<pre><code class="language-sh">$ docker image tag webecho:latest registry.fly.io/webecho:latest
-$ docker push registry.fly.io/webecho:latest
-The push refers to repository [registry.fly.io/webecho]
-18dc56492fda: Pushed
-14d9ed21e5fa: Pushed
-f958be77db0f: Pushed
-5a95ac30ae8b: Pushed
-0dbac4a9743c: Pushed
-6b971f7d0a50: Pushed
-905fa559f035: Pushed
-975a8857676b: Pushed
-latest: digest: &lt;SHA265 OMITTED&gt; size: 1995
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">$</span><span style="color:#fbf1c7;"> docker image tag webecho:latest registry.fly.io/webecho:latest
+</span><span style="color:#8ec07c;">$</span><span style="color:#fbf1c7;"> docker push registry.fly.io/webecho:latest
+</span><span style="color:#8ec07c;">The</span><span style="color:#fbf1c7;"> push refers to repository </span><span style="color:#fb4934;">[</span><span style="color:#fbf1c7;">registry.fly.io/webecho</span><span style="color:#fb4934;">]
+</span><span style="color:#8ec07c;">18dc56492fda:</span><span style="color:#fbf1c7;"> Pushed
+</span><span style="color:#8ec07c;">14d9ed21e5fa:</span><span style="color:#fbf1c7;"> Pushed
+</span><span style="color:#8ec07c;">f958be77db0f:</span><span style="color:#fbf1c7;"> Pushed
+</span><span style="color:#8ec07c;">5a95ac30ae8b:</span><span style="color:#fbf1c7;"> Pushed
+</span><span style="color:#8ec07c;">0dbac4a9743c:</span><span style="color:#fbf1c7;"> Pushed
+</span><span style="color:#8ec07c;">6b971f7d0a50:</span><span style="color:#fbf1c7;"> Pushed
+</span><span style="color:#8ec07c;">905fa559f035:</span><span style="color:#fbf1c7;"> Pushed
+</span><span style="color:#8ec07c;">975a8857676b:</span><span style="color:#fbf1c7;"> Pushed
+</span><span style="color:#8ec07c;">latest:</span><span style="color:#fbf1c7;"> digest: </span><span style="color:#8ec07c;">&lt;</span><span style="color:#fbf1c7;">SHA265 OMITTED</span><span style="color:#8ec07c;">&gt;</span><span style="color:#fbf1c7;"> size: 1995
+</span></pre>
 <p>Finally, we create the <code>fly.toml</code> file</p>
-<pre><code class="language-toml"># fly.toml
-app = 'webecho'
-primary_region = 'sea'
-
-[build]
-image = 'registry.fly.io/webecho:latest'
-
-[deploy]
-strategy = "rolling"
-
-[http_service]
-internal_port = 8080
-force_https = true
-auto_stop_machines = 'stop'
-auto_start_machines = true
-min_machines_running = 1
-processes = ['app']
-
-[[vm]]
-size = 'shared-cpu-1x'
-memory = "256mb"
-cpus = 1
-
-[checks.health]
-type = "http"
-method = "GET"
-path = "/echo"
-port = 8080
-interval = "5s"
-timeout = "5s"
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;"># fly.toml
+</span><span style="color:#83a598;">app </span><span style="color:#fbf1c7;">= &#39;</span><span style="color:#b8bb26;">webecho</span><span style="color:#fbf1c7;">&#39;
+</span><span style="color:#83a598;">primary_region </span><span style="color:#fbf1c7;">= &#39;</span><span style="color:#b8bb26;">sea</span><span style="color:#fbf1c7;">&#39;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">[build]
+</span><span style="color:#83a598;">image </span><span style="color:#fbf1c7;">= &#39;</span><span style="color:#b8bb26;">registry.fly.io/webecho:latest</span><span style="color:#fbf1c7;">&#39;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">[deploy]
+</span><span style="color:#83a598;">strategy </span><span style="color:#fbf1c7;">= &quot;</span><span style="color:#b8bb26;">rolling</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">[http_service]
+</span><span style="color:#83a598;">internal_port </span><span style="color:#fbf1c7;">= </span><span style="color:#d3869b;">8080
+</span><span style="color:#83a598;">force_https </span><span style="color:#fbf1c7;">= </span><span style="color:#d3869b;">true
+</span><span style="color:#83a598;">auto_stop_machines </span><span style="color:#fbf1c7;">= &#39;</span><span style="color:#b8bb26;">stop</span><span style="color:#fbf1c7;">&#39;
+</span><span style="color:#83a598;">auto_start_machines </span><span style="color:#fbf1c7;">= </span><span style="color:#d3869b;">true
+</span><span style="color:#83a598;">min_machines_running </span><span style="color:#fbf1c7;">= </span><span style="color:#d3869b;">1
+</span><span style="color:#83a598;">processes </span><span style="color:#fbf1c7;">= [&#39;</span><span style="color:#b8bb26;">app</span><span style="color:#fbf1c7;">&#39;]
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">[[vm]]
+</span><span style="color:#83a598;">size </span><span style="color:#fbf1c7;">= &#39;</span><span style="color:#b8bb26;">shared-cpu-1x</span><span style="color:#fbf1c7;">&#39;
+</span><span style="color:#83a598;">memory </span><span style="color:#fbf1c7;">= &quot;</span><span style="color:#b8bb26;">256mb</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#83a598;">cpus </span><span style="color:#fbf1c7;">= </span><span style="color:#d3869b;">1
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">[checks.health]
+</span><span style="color:#83a598;">type </span><span style="color:#fbf1c7;">= &quot;</span><span style="color:#b8bb26;">http</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#83a598;">method </span><span style="color:#fbf1c7;">= &quot;</span><span style="color:#b8bb26;">GET</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#83a598;">path </span><span style="color:#fbf1c7;">= &quot;</span><span style="color:#b8bb26;">/echo</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#83a598;">port </span><span style="color:#fbf1c7;">= </span><span style="color:#d3869b;">8080
+</span><span style="color:#83a598;">interval </span><span style="color:#fbf1c7;">= &quot;</span><span style="color:#b8bb26;">5s</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#83a598;">timeout </span><span style="color:#fbf1c7;">= &quot;</span><span style="color:#b8bb26;">5s</span><span style="color:#fbf1c7;">&quot;
+</span></pre>
 <p>And deploy!</p>
-<pre><code class="language-sh">$ flyctl deploy -c fly.toml -a webecho
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">$</span><span style="color:#fbf1c7;"> flyctl deploy -c fly.toml -a webecho
+</span></pre>
 <div>
 
   <x-img>
@@ -492,8 +505,9 @@ timeout = "5s"
 dashboard just to be sure.</p>
 </blockquote>
 <p>Right. Forgot to set the environment variable!</p>
-<pre><code class="language-sh">$ fly secrets set "APP_ECHO_ME=nix fixes this" -c fly.toml -a webecho
-</code></pre>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">$</span><span style="color:#fbf1c7;"> fly secrets set &quot;</span><span style="color:#b8bb26;">APP_ECHO_ME=nix fixes this</span><span style="color:#fbf1c7;">&quot; -c fly.toml -a webecho
+</span></pre>
 <div>
 
   <x-img>

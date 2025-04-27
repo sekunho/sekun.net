@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Run a Project Zomboid dedicated server - sekun</title>
+
+    <link rel="stylesheet" href="/assets/css/style.css"/>
+
+    <link rel="icon" href="/assets/images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
+    <link rel="mask-icon" href="/assets/images/safari-pinned-tab.svg">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nix.min.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    
+  <meta name="title" content="Run a Project Zomboid dedicated server" />
+  <meta name="description" content="Exploring the basics of esbuild's build API, to build SASS, CSS, and JS.
+As a sweet treat, how to package these all up with nix.
+" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://metatags.io/" />
+  <meta property="og:title" content="Run a Project Zomboid dedicated server" />
+  <meta property="og:description" content="Exploring the basics of esbuild's build API, to build SASS, CSS, and JS.
+As a sweet treat, how to package these all up with nix.
+" />
+  <meta property="og:image" content="https://sekun.net/assets/images/posts/esbuilds-build-api-is-pretty-cool/cover.jpg" />
+
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://metatags.io/" />
+  <meta property="twitter:title" content="Run a Project Zomboid dedicated server" />
+  <meta property="twitter:description" content="Exploring the basics of esbuild's build API, to build SASS, CSS, and JS.
+As a sweet treat, how to package these all up with nix.
+" />
+  <meta property="twitter:image" content="https://sekun.net/assets/images/posts/esbuilds-build-api-is-pretty-cool/cover.jpg" />
+
+  </head>
+
+  <body>
+    <nav class="nav">
+  <ul>
+    <li><a href="/">λsekun.net</a></li>
+    <li><a href="/blog">/blog</a></li>
+    <li><a href="/projects">/projects</a></li>
+    <li><a href="/contact">/contact</a></li>
+  </ul>
+</nav>
+    
+<h1>Run a Project Zomboid dedicated server</h1>
+<div>
+
+</div>
+<div>
+
+  <x-img>
+    <template shadowrootmode="open">
+      <img src="/assets/images/posts/esbuilds-build-api-is-pretty-cool/cover.jpg" alt="2 esbuild logo side by side in white and dark backgrounds"/>
+
+      <style>
+        x-img-foo:not(:defined) > template[shadowrootmode] ~ * {
+          display: none;
+        }
+
+        img {
+          
+
+          
+          width: 100%;
+          
+
+          display: block;
+          margin: 1rem auto;
+        }
+      </style>
+    </template>
+  </x-img>
+
+</div>
+<span class="post-metadata">
+  Published on <time datetime="2025-04-27T18:55:48+00:00">2025-04-27 18:55 UTC</time>
+</span>
+<div>
+
+
+  <div class="tags">
+  
+    <span>devops</span>
+  
+    <span>hetzner</span>
+  
+    <span>opentofu</span>
+  
+    <span>ansible</span>
+  
+  </div>
+
+</div>
+<h2>Introduction</h2>
+<p>My friends and I have been talking about playing Project Zomboid for quite some
+time. We recently got the 4-player bundle for those who didn’t have it yet. For
+convenience, the game comes with an option for one person to host the server
+through Steam but it was rather tedious for us since basically the host had to
+be there for the other one to play. Not to mention the game data is only
+available to the host.</p>
+<p>Fortunately for us, Project Zomboid allows you to run the server on a dedicated
+machine. So for instance, in the event we need to move the game files around,
+backups could be set up and made accessible for others to download.</p>
+<p>So here’s a quick guide to run a dedicated Project Zomboid server. For everyone,
+or perhaps my friends would also try it out for something else. :)</p>
+<h2>Spinning up a VPS</h2>
+<p>There are several cloud providers out there but since I don’t have the luxury
+to pay for AWS/GCP, I went with Hetzner instead.</p>
+<p>You could just spin one up through Hetzner’s UI but I’ll need something to
+automate the process of provisioning one, like <a href="https://opentofu.org/"><code>opentofu</code></a>!</p>
+<pre style="background-color:#282828;">
+<span style="color:#fbf1c7;"># pzserver.tf
+</span><span style="color:#fbf1c7;">terraform {
+</span><span style="color:#fbf1c7;">  required_version = &quot;1.8.5&quot;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">  required_providers {
+</span><span style="color:#fbf1c7;">    hcloud = {
+</span><span style="color:#fbf1c7;">      source  = &quot;hetznercloud/hcloud&quot;
+</span><span style="color:#fbf1c7;">      version = &quot;~&gt; 1.50&quot;
+</span><span style="color:#fbf1c7;">    }
+</span><span style="color:#fbf1c7;">  }
+</span><span style="color:#fbf1c7;">}
+</span></pre>
+<p>Here we’re telling <code>opentofu</code> that we’d like to use Hetzner Cloud’s provider.
+This allows us to manage Hetzner resources.</p>
+<p>We need a server from them, so let’s add that.</p>
+<pre style="background-color:#282828;">
+<span style="font-style:italic;color:#928374;"># pzserver.tf
+</span><span style="color:#fbf1c7;">
+</span><span style="font-style:italic;color:#928374;"># ...
+</span><span style="color:#fb4934;">resource </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">hcloud_server</span><span style="color:#fbf1c7;">&quot; &quot;</span><span style="color:#b8bb26;">pzserver</span><span style="color:#fbf1c7;">&quot; {
+</span><span style="color:#fbf1c7;">  </span><span style="color:#83a598;">name        </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">pzserver</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#fbf1c7;">  </span><span style="color:#83a598;">server_type </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">ccx13</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#fbf1c7;">  </span><span style="color:#83a598;">datacenter  </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">nbg1-dc3</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#fbf1c7;">  </span><span style="color:#83a598;">ssh_keys    </span><span style="color:#8ec07c;">= </span><span style="color:#d3869b;">data</span><span style="color:#fbf1c7;">.</span><span style="color:#83a598;">hcloud_ssh_keys</span><span style="color:#fbf1c7;">.</span><span style="color:#83a598;">kanto</span><span style="color:#fbf1c7;">.</span><span style="color:#83a598;">ssh_keys</span><span style="color:#fbf1c7;">[</span><span style="color:#8ec07c;">*</span><span style="color:#fbf1c7;">].</span><span style="color:#83a598;">name
+</span><span style="color:#fbf1c7;">  </span><span style="color:#83a598;">image       </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">ubuntu-24.04</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">  </span><span style="color:#fabd2f;">public_net </span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">    </span><span style="color:#83a598;">ipv4_enabled </span><span style="color:#8ec07c;">= </span><span style="color:#d3869b;">true
+</span><span style="color:#fbf1c7;">    </span><span style="color:#83a598;">ipv6_enabled </span><span style="color:#8ec07c;">= </span><span style="color:#d3869b;">false
+</span><span style="color:#fbf1c7;">  }
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">  </span><span style="color:#fabd2f;">network </span><span style="color:#fbf1c7;">{
+</span><span style="color:#fbf1c7;">    </span><span style="color:#83a598;">network_id </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">hcloud_network.</span><span style="color:#83a598;">network</span><span style="color:#fbf1c7;">.</span><span style="color:#83a598;">id
+</span><span style="color:#fbf1c7;">    </span><span style="color:#83a598;">ip         </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">&quot;</span><span style="color:#b8bb26;">10.0.1.2</span><span style="color:#fbf1c7;">&quot;
+</span><span style="color:#fbf1c7;">  }
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">  </span><span style="color:#83a598;">depends_on </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">[
+</span><span style="color:#fbf1c7;">    hcloud_network_subnet.</span><span style="color:#83a598;">subnet
+</span><span style="color:#fbf1c7;">  ]
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#fbf1c7;">  </span><span style="color:#83a598;">firewall_ids </span><span style="color:#8ec07c;">= </span><span style="color:#fbf1c7;">[hcloud_firewall.</span><span style="color:#83a598;">server-firewall</span><span style="color:#fbf1c7;">.</span><span style="color:#83a598;">id</span><span style="color:#fbf1c7;">]
+</span><span style="color:#fbf1c7;">}
+</span></pre>
+<p>This creates an Ubuntu 24.04 server using Hetzner’s <code>ccx13</code> which gets you a
+dedicated 2-core AMD vCPU, and 8GB of memory which is just about right for the
+number of players we intend to have. Somehow, it’s cheaper than the 8GB memory
+equivalent for a shared vCPU. Odd.</p>
+<p>So if ever you want to spin up another server quickly, you no longer need to
+manually do it through Hetzner’s website. Now that we’ve provisioned the server,
+let’s set up the game server.</p>
+<h2>Setting up the server</h2>
+<p>Project Zomboid has a fairly detailed wiki on how to run a game server, so if
+you would like, you could check that out instead.</p>
+<p>Since we’re running it outside of our Steam account, we need to download and
+install <code>steamcmd</code> to run the game’s server.</p>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">sudo</span><span style="color:#fbf1c7;"> add-apt-repository multiverse</span><span style="color:#8ec07c;">; sudo</span><span style="color:#fbf1c7;"> dpkg --add-architecture i386</span><span style="color:#8ec07c;">; sudo</span><span style="color:#fbf1c7;"> apt update
+</span><span style="color:#8ec07c;">sudo</span><span style="color:#fbf1c7;"> apt install steamcmd
+</span><span style="color:#fbf1c7;">
+</span><span style="color:#8ec07c;">sudo</span><span style="color:#fbf1c7;"> apt-get install software-properties-common -y
+</span><span style="color:#8ec07c;">sudo</span><span style="color:#fbf1c7;"> apt-add-repository non-free
+</span></pre>
+<p>To run the game’s server, we can avoid using the default <code>root</code> user since it
+has too many dangerous permissions. So let’s create one called <code>pzuser</code> solely
+for running the game’s server.</p>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">sudo</span><span style="color:#fbf1c7;"> adduser pzuser
+</span></pre>
+<p>Then create the destination for Project Zomboid’s game server.</p>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">sudo</span><span style="color:#fbf1c7;"> mkdir /opt/pzserver
+</span><span style="color:#8ec07c;">sudo</span><span style="color:#fbf1c7;"> chown pzuser:pzuser /opt/pzserver
+</span></pre>
+<p>Then we switch from <code>root</code> to <code>pzuser</code>, and login</p>
+<pre style="background-color:#282828;">
+<span style="color:#8ec07c;">sudo</span><span style="color:#fbf1c7;"> -u pzuser -i
+</span></pre>
+<p>Setting all of…that can be very repetitive and boring. Which is why tools like
+<code>ansible</code> come in handy.</p>
+
+
+    <footer>
+  <img style="width: 8rem;" src="/assets/images/not-by-ai.png">
+  <div>
+    Copyright <a href="https://github.com/sekunho">SEKUN</a> 2022-2025.
+    Generated by <a href="/projects/puggle"><code>puggle</code></a>.
+  </div>
+</footer>
+
+    <a rel="me" href="https://mastodon.social/@sekun" style="display: none;">Mastodon</a>
+    <script>hljs.highlightAll();</script>
+
+    <script>
+      (function attachShadowRoots(root) {
+        root.querySelectorAll("template[shadowrootmode]").forEach(template => {
+          const mode = template.getAttribute("shadowrootmode");
+          const shadowRoot = template.parentNode.attachShadow({ mode });
+
+          shadowRoot.appendChild(template.content);
+          template.remove();
+          attachShadowRoots(shadowRoot);
+        });
+      })(document);
+    </script>
+  </body>
+</html>
