@@ -56,8 +56,7 @@ separate build process.
   </ul>
 </nav>
     
-<h1>Deploying Nix builds on Fly.io</h1>
-<div>
+<h1 id="Deploying Nix builds on Fly.io"><a href="#Deploying Nix builds on Fly.io">Deploying Nix builds on Fly.io</a></h1><div>
 
 
 </div>
@@ -117,7 +116,7 @@ it into a docker image somehow instead of having to create a separate build proc
 This means reusing the exact tooling present in your nix dev shell down to the
 exact commit.</p>
 <p>But do not fret, you <em>can</em> do something like that! Just with slightly more work.</p>
-<h2>Prerequisites</h2>
+<h2 id="prerequisites"><a href="#prerequisites">Prerequisites</a></h2>
 <p>You’ll need to have the following installed:</p>
 <ul>
 <li><code>nix</code> with flakes enabled</li>
@@ -302,7 +301,7 @@ and renders it into an HTML page that’s served by axum.</p>
   </x-figure>
 
 </div>
-<h2>Building the container image with nix</h2>
+<h2 id="building-the-container-image-with-nix"><a href="#building-the-container-image-with-nix">Building the container image with nix</a></h2>
 <p><code>nix</code> has a few options for creating images<sup class="footnote-reference"><a href="#1">1</a></sup> but the one we’ll be using is
 <code>pkgs.streamLayeredImage</code><sup class="footnote-reference"><a href="#2">2</a></sup>. It has a bunch of attributes in it but we’re only
 interested in a couple of them.</p>
@@ -409,7 +408,7 @@ To load into <code>docker</code> as an image.</p>
 </span><span style="color:#8ec07c;">bruh⏎
 </span></pre>
 <p>So far looks pretty good.</p>
-<h2>Deploying to Fly.io</h2>
+<h2 id="deploying-to-fly.io"><a href="#deploying-to-fly.io">Deploying to Fly.io</a></h2>
 <p>This part shouldn’t differ too much from the usual deployment process.</p>
 <p>First, login your Fly account with <a href="https://fly.io/docs/flyctl/auth-login/"><code>flyctl auth login</code></a>.
 This opens a new tab in your browser for you to complete the login process.</p>
@@ -535,7 +534,7 @@ dashboard just to be sure.</p>
 <p>If you would like to check out the final result of everything in this article,
 give this <a href="https://github.com/sekunho/webecho">GitHub repository</a> a look!</p>
 </blockquote>
-<h2>Footnotes</h2>
+<h2 id="footnotes"><a href="#footnotes">Footnotes</a></h2>
 <div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
 <p><a href="https://ryantm.github.io/nixpkgs/builders/images/dockertools"><code>ryantm</code>’s NixOS manual</a></p>
 </div>

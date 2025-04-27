@@ -56,8 +56,7 @@ that's completely FREE. How crazy is that? My wallet is spared!
   </ul>
 </nav>
     
-<h1>What I learned from building an emoji URL shortener in Rust</h1>
-<div>
+<h1 id="what-i-learned-from-building-an-emoji-url-shortener-in-rust"><a href="#what-i-learned-from-building-an-emoji-url-shortener-in-rust">What I learned from building an emoji URL shortener in Rust</a></h1><div>
 
 </div>
 <div>
@@ -157,7 +156,7 @@ feeling disgusted from me bringing such a thing to existence</del>.</p>
 
 </div>
 <p>Here are some of the things I learned from building a simple project.</p>
-<h2>Tech Stack</h2>
+<h2 id="tech-stack"><a href="#tech-stack">Tech Stack</a></h2>
 <p>After looking around, I decided to go with the following:</p>
 <ul>
 <li><code>axum</code> (web server)</li>
@@ -168,7 +167,7 @@ feeling disgusted from me bringing such a thing to existence</del>.</p>
 <li><code>docker</code> (“simple” deploys)</li>
 <li><code>nix</code> (reproducible environments)</li>
 </ul>
-<h2>PostgreSQL Procedures</h2>
+<h2 id="postgresql-procedures"><a href="#postgresql-procedures">PostgreSQL Procedures</a></h2>
 <p>Procedures are <em>extremely</em> cool although this isn’t exactly new to me. I’ve been
 experimenting with this in one of my previous, unfinished projects called GNAWEX
 <sup class="footnote-reference"><a href="#1">1</a></sup> (One day I will finish it don’t you worry).</p>
@@ -211,7 +210,7 @@ in this case cause Postgres already natively supports transactions.</p>
 <p>I try to make heavy use of stored procedures as long as it’s applicable.
 Inserting to multiple tables with one function, fetching leaderboard entries,
 etc.</p>
-<h2>Error handling with implicit <code>From&lt;T&gt;</code></h2>
+<h2 id="error-handling-with-implicit-<code>from<t></code>"><a href="#error-handling-with-implicit-<code>from<t></code>">Error handling with implicit <code>From<T></code></a></h2>
 <p>Error handling is pretty nice with Rust, especially since I was never a fan of
 exceptions since it made control flow so weird. Although that may be because I
 never really invested that much time working with them. In Rust, I like that
@@ -293,7 +292,7 @@ many, but it becomes.</p>
 </span></pre>
 <p>Except it’s kinda annoying cause I have to do this at every call site. Although
 there are times when I did end up using this.</p>
-<h2>Application configuration</h2>
+<h2 id="application-configuration"><a href="#application-configuration">Application configuration</a></h2>
 <p>While convenient, I can’t just hard-code everything into the application,
 especially for a public project. There are a lot of sensitive data like certs,
 and sometimes it’s just <em>more</em> convenient for whoever is using the application
@@ -345,7 +344,7 @@ a <code>Result&lt;AppConfig, Error&gt;</code>. I’ll talk about the <code>Error
 <p>Side note: This kinda looks monadic, where it binds <code>AppConfig</code> to <code>host</code>, and
 evaluates to <code>Error</code> and “exits” otherwise.</p>
 </blockquote>
-<h2>Handling database…handler in <code>axum</code></h2>
+…<h2 id="handling-databasehandler-in-<code>axum</code>"><a href="#handling-databasehandler-in-<code>axum</code>">Handling databasehandler in <code>axum</code></a></h2>
 <p>I created this database handle that has all the things I need to communicate
 with the database server:</p>
 <pre style="background-color:#282828;">
@@ -593,7 +592,7 @@ ownership of <code>db::Handle</code> without having to clone it <sup class="foot
 <p>Although, I had to manually dereference it to get the reference to <code>Handle</code>. It’s
 also a good thing that I don’t have to mutate <code>handle</code> at all because otherwise
 this would’ve been a more painful experience.</p>
-<h2>Connecting to a managed database</h2>
+<h2 id="connecting-to-a-managed-database"><a href="#connecting-to-a-managed-database">Connecting to a managed database</a></h2>
 <p>Initially, I used <code>sqlx</code> as the db library since it gets recommended in almost
 every post about SQL libraries on the Rust subreddit. It worked fine for me
 until I had to get it to connect to DO’s managed DB. It required me to connect
@@ -708,7 +707,7 @@ and manually appended it to the file instead.</p>
 </span><span style="color:#8ec07c;">./emojied
 </span></pre>
 <p>Kind of hacky, and inconvenient especially if I forget. But it works!</p>
-<h2>URL redirect woes</h2>
+<h2 id="url-redirect-woes"><a href="#url-redirect-woes">URL redirect woes</a></h2>
 <p>This is a short one. For the redirect, I returned an HTTP status 301 <sup class="footnote-reference"><a href="#4">5</a></sup> with
 a response containing the URL to redirect to. So the process goes something
 like this:</p>
@@ -724,7 +723,7 @@ had to increment the <code>clicks</code> column every time the link is visited. 
 cached, then the server won’t bother to call the functions it needs to call!</p>
 <p>Then, I found out that <code>301</code> gets cached automatically by the browser <sup class="footnote-reference"><a href="#5">6</a></sup>,
 and that I needed to use <code>302</code>.</p>
-<h2>HTML templating with <code>maud</code></h2>
+<h2 id="html-templating-with-<code>maud</code>"><a href="#html-templating-with-<code>maud</code>">HTML templating with <code>maud</code></a></h2>
 <p>I had a pleasant experience with server-side templating while I was building
 a Haskell project called <a href="https://swoogle.sekun.dev">swoogle</a>. I used <code>lucid</code>
 <sup class="footnote-reference"><a href="#6">7</a></sup> which was a pretty darn elegant HTML DSL.</p>
@@ -764,7 +763,7 @@ must’ve changed in <code>axum</code>, so I had to pull from the <code>main</co
 </span><span style="color:#fbf1c7;">  }
 </span><span style="color:#fbf1c7;">}
 </span></pre>
-<h2><code>&lt;noscript&gt;</code> tag, and problems with JS toggling extensions</h2>
+<h2 id="<code><noscript></code>-tag,-and-problems-with-js-toggling-extensions"><a href="#<code><noscript></code>-tag,-and-problems-with-js-toggling-extensions"><code><noscript></code> tag, and problems with JS toggling extensions</a></h2>
 <p>I wanted to have the website work with JS disabled because, well, it was a very
 simple website. There was no reason why I couldn’t make all the important features
 work without JS!</p>
@@ -804,7 +803,7 @@ extensions like <code>NoScript</code> when it “disables” JS? It’s somethin
 weren’t copied over to the new <code>span</code>/<code>div</code> tags. And that breaks a lot of stuff.</p>
 <p>So while <code>emojied</code> does work without JS, it won’t work due to how the extensions
 work <sup class="footnote-reference"><a href="#8">9</a></sup>.</p>
-<h2>Conclusion</h2>
+<h2 id="conclusion"><a href="#conclusion">Conclusion</a></h2>
 <p>Alright, that was a lot. I did learn a lot from this experience. I actually only
 read until chapter 10 of the Rust Book, and skipped to some parts like advanced
 traits, and other things. I really like the fact that there’s a detailed book
@@ -823,7 +822,7 @@ this at all since I mostly have no idea what I’m doing, and I’m trying to av
 having to deal with lifetimes as much as possible. I’m hosting this on a 1x shared
 vCPU + 512MB RAM, and it didn’t break a sweat during peak load.</p>
 <p>Anyway, so far, so good! I’m pretty ecstatic to continue learning Rust.</p>
-<h2>Footnotes</h2>
+<h2 id="footnotes"><a href="#footnotes">Footnotes</a></h2>
 <div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
 <p><a href="https://github.com/gnawex/gnawex">https://github.com/gnawex/gnawex</a></p>
 </div>
